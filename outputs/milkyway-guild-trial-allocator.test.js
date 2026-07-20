@@ -5,10 +5,12 @@ const vm = require("node:vm");
 
 const userscriptPath = path.join(__dirname, "milkyway-guild-trial-allocator.user.js");
 const source = fs.readFileSync(userscriptPath, "utf8");
-for (const id of ["mwi-gta-remote-endpoint", "mwi-gta-remote-guild", "mwi-gta-remote-token", "mwi-gta-remote-output"]) {
+for (const id of ["mwi-gta-remote-endpoint", "mwi-gta-remote-guild", "mwi-gta-remote-token"]) {
   assert.match(source, new RegExp(id));
 }
-for (const action of ["remote-invites", "remote-config", "remote-pull", "remote-publish"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
+assert.equal(source.includes("mwi-gta-remote-output"), false, "member invite output should be removed");
+assert.equal(source.includes('data-action="remote-invites"'), false, "member invite action should be removed");
+for (const action of ["remote-config", "remote-pull", "remote-publish"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 
 function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;
@@ -43,7 +45,6 @@ function loadFunction(name, context = {}) {
 
 const parseSimulatorExport = loadFunction("parseSimulatorExport");
 const buildSimulatorImportRecord = loadFunction("buildSimulatorImportRecord", { parseSimulatorExport });
-const buildRemoteInviteMembers = loadFunction("buildRemoteInviteMembers");
 const buildRemoteAssignmentPayload = loadFunction("buildRemoteAssignmentPayload");
 const buildRemoteConfigPayload = loadFunction("buildRemoteConfigPayload");
 
@@ -119,11 +120,6 @@ assert.equal(profileBinding.name, "ProfilePlayer");
 assert.throws(() => buildSimulatorImportRecord(JSON.stringify(exported), "", ""), /成员名/);
 assert.throws(() => buildSimulatorImportRecord(JSON.stringify({ ...exported, characterName: "ExportedPlayer" }), "OtherPlayer", ""), /不一致/);
 
-assert.deepEqual(JSON.parse(JSON.stringify(buildRemoteInviteMembers(
-  [{ name: "Alice" }, { name: "测试玩家" }],
-  { alice: { characterId: 12345 } },
-))), [{ name: "Alice", memberId: "12345" }, { name: "测试玩家" }]);
-
 const remotePayload = buildRemoteAssignmentPayload({
   generatedAt: "2026/7/20 12:00:00",
   lifeAssignments: [{ trial: { key: "foraging", zh: "采摘" }, members: [{ name: "Alice", score: 136, note: "专业最高" }] }],
@@ -135,9 +131,10 @@ assert.equal(remotePayload.members["m-alice"].combat.reason, "AOE适配");
 const remoteConfig = buildRemoteConfigPayload({
   life: [{ key: "foraging", zh: "采摘", capacity: 20, signed: 3 }],
   combat: [{ key: "swarm", zh: "虫群", capacity: 40, signed: 2 }],
-}, "guild-1", "2026-07-17", { swarm: { weights: { aoe: 2 } } });
+}, "guild-1", "2026-07-17", { swarm: { weights: { aoe: 2 } } }, [{ name: "Alice" }, { name: "测试玩家" }, { name: "Alice" }]);
 assert.equal(remoteConfig.lifeTrials[0].key, "foraging");
 assert.equal(remoteConfig.combatTrials[0].capacity, 40);
+assert.deepEqual(JSON.parse(JSON.stringify(remoteConfig.memberNames)), ["Alice", "测试玩家"]);
 
 console.log("simulator import tests passed");
 

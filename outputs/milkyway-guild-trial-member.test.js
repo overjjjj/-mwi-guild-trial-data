@@ -6,9 +6,10 @@ const vm = require("node:vm");
 const userscriptPath = path.join(__dirname, "milkyway-guild-trial-member.user.js");
 assert.equal(fs.existsSync(userscriptPath), true, "member userscript should exist");
 const source = fs.readFileSync(userscriptPath, "utf8");
-for (const id of ["mwi-gtm-launcher", "mwi-gtm-panel", "mwi-gtm-endpoint", "mwi-gtm-token"]) {
+for (const id of ["mwi-gtm-launcher", "mwi-gtm-panel", "mwi-gtm-endpoint", "mwi-gtm-guild"]) {
   assert.equal((source.match(new RegExp(id, "g")) || []).length >= 1, true, `${id} should be present`);
 }
+assert.equal(source.includes("mwi-gtm-token"), false, "member token field should be removed");
 for (const action of ["read", "upload", "refresh"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 
 function loadFunction(name) {
@@ -37,6 +38,13 @@ function loadFunction(name) {
 
 const buildMemberProfile = loadFunction("buildMemberProfile");
 const calculatePersonalRecommendations = loadFunction("calculatePersonalRecommendations");
+const normalizeMemberIdentity = loadFunction("normalizeMemberIdentity");
+
+const identity = normalizeMemberIdentity(" guild-cn-1 ", " Alice ");
+assert.equal(identity.guildId, "guild-cn-1");
+assert.equal(identity.name, "Alice");
+assert.throws(() => normalizeMemberIdentity("bad guild", "Alice"), /公会 ID/);
+assert.throws(() => normalizeMemberIdentity("guild-cn-1", ""), /角色/);
 
 const skills = {
   melee: 31, defense: 133, magic: 142, ranged: 1, attack: 130,
@@ -101,4 +109,4 @@ if (process.argv[2]) {
   }, null, 2));
 }
 
-module.exports = { buildMemberProfile, calculatePersonalRecommendations };
+module.exports = { buildMemberProfile, calculatePersonalRecommendations, normalizeMemberIdentity };

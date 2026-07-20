@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.12.0
+// @version      0.13.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
@@ -450,15 +450,10 @@
           <input id="mwi-gta-remote-token" type="password" autocomplete="off" placeholder="Vercel 环境变量中的 LEADER_TOKEN">
         </label>
         <div class="mwi-gta-actions" style="margin:8px 0 12px">
-          <button class="mwi-gta-btn" data-action="remote-invites">生成会员邀请</button>
-          <button class="mwi-gta-btn" data-action="remote-config">同步本周试炼</button>
+          <button class="mwi-gta-btn" data-action="remote-config">同步试炼和会员名单</button>
           <button class="mwi-gta-btn" data-action="remote-pull">拉取会员上传</button>
           <button class="mwi-gta-btn primary" data-action="remote-publish">发布当前方案</button>
-          <button class="mwi-gta-btn" data-action="copy-invites">复制邀请</button>
         </div>
-        <label class="mwi-gta-field">会员邀请输出
-          <textarea id="mwi-gta-remote-output" spellcheck="false" readonly placeholder="姓名、成员 ID、邀请令牌"></textarea>
-        </label>
         <label class="mwi-gta-field">成员 CSV
           <textarea id="mwi-gta-csv" spellcheck="false"></textarea>
         </label>
@@ -481,7 +476,7 @@
             <tr><th>偏好</th><td>preferLife、preferCombat 可填 key 或中文名，会给该成员加分。avoid 可用英文逗号或竖线分隔多个不想去的试炼。</td></tr>
             <tr><th>页面读取</th><td>在“试炼”页读取试炼和名额；在“成员”页读取姓名和报名方向。打开公开成员资料后，可在“概览”或“专业”页点击“读取当前资料”，缓存总等级、战斗等级、战力和10项生活等级。</td></tr>
             <tr><th>角色导出</th><td>可粘贴模拟器角色 JSON，或读取其他兼容脚本公开的 MWI_INTEGRATED.getSimulatorData()。导入战斗等级、武器类别、非生产装备、能力与战斗房屋摘要；试炼禁用的食物和饮料不会计入。导出没有角色名时必须手工绑定或先打开对应成员资料。</td></tr>
-            <tr><th>会员端</th><td>配置 Worker 地址、公会 ID 和会长令牌后，可为 CSV 中的成员生成邀请令牌、拉取会员本周上传并合并评分、发布当前全局分配。会员端只能读取自己的正式结果。</td></tr>
+            <tr><th>会员端</th><td>同步试炼时会把成员 CSV 中的姓名保存为本周公会名单。会员填写相同公会 ID 后，按当前角色名匹配名单并上传。该模式没有会员令牌，无法防止懂接口的人伪造同名请求。</td></tr>
             <tr><th>边界</th><td>脚本不直接报名、不调用隐藏接口、不代替会长权限；输出的是推荐表和可复制名单。</td></tr>
           </tbody>
         </table>
@@ -506,7 +501,6 @@
     remoteEndpoint: panel.querySelector("#mwi-gta-remote-endpoint"),
     remoteGuild: panel.querySelector("#mwi-gta-remote-guild"),
     remoteToken: panel.querySelector("#mwi-gta-remote-token"),
-    remoteOutput: panel.querySelector("#mwi-gta-remote-output"),
   };
 
   hydrateSettings();
@@ -538,11 +532,9 @@
     if (action === "profile") captureCurrentProfile();
     if (action === "read-simulator") readCompatibleSimulatorExport();
     if (action === "import-simulator") importSimulatorExport(el.simulatorJson.value);
-    if (action === "remote-invites") generateRemoteInvites();
     if (action === "remote-config") syncRemoteConfig();
     if (action === "remote-pull") pullRemoteMembers();
     if (action === "remote-publish") publishRemotePlan();
-    if (action === "copy-invites") copyText(el.remoteOutput.value, "会员邀请已复制。");
     if (action === "plan") buildAndRenderPlan();
     if (action === "copy") copyPlan();
     if (action === "save") saveSettings();
@@ -1012,22 +1004,6 @@
     return { ...record, name };
   }
 
-  async function generateRemoteInvites() {
-    try {
-      saveSettings();
-      const members = parseCsv(state.membersCsv).map(normalizeMember).filter((member) => member.name);
-      if (!members.length) throw new Error("成员 CSV 为空。");
-      const payloadMembers = buildRemoteInviteMembers(members, readGuildLevelCache());
-      const data = await remoteApi("/v1/leader/invites", "POST", { guildId: state.remoteGuildId, members: payloadMembers });
-      el.remoteOutput.value = data.invites.map((invite) => `${invite.name}\t${invite.memberId}\t${invite.token}`).join("\n");
-      setStatus(`已生成 ${data.invites.length} 个会员邀请令牌。请分别发给对应成员。`);
-      switchTab("settings");
-    } catch (error) {
-      setStatus(`生成会员邀请失败：${error.message}`);
-      switchTab("settings");
-    }
-  }
-
   async function pullRemoteMembers() {
     try {
       saveSettings();
@@ -1066,9 +1042,10 @@
       let bossProfiles = {};
       try { bossProfiles = JSON.parse(state.bossProfilesJson || "{}"); }
       catch (_) { throw new Error("Boss 属性 JSON 无法解析。"); }
-      const payload = buildRemoteConfigPayload(trials, state.remoteGuildId, getCurrentWeekId(), bossProfiles);
+      const roster = readRemoteRoster();
+      const payload = buildRemoteConfigPayload(trials, state.remoteGuildId, getCurrentWeekId(), bossProfiles, roster);
       await remoteApi("/v1/leader/config", "PUT", payload);
-      setStatus("本周试炼和 Boss 权重已同步，会员刷新后可查看个人适配排名。");
+      setStatus(`本周试炼、Boss 权重和 ${payload.memberNames.length} 名会员名单已同步。`);
     } catch (error) {
       setStatus(`同步本周试炼失败：${error.message}`);
     }
@@ -1084,10 +1061,11 @@
       let bossProfiles = {};
       try { bossProfiles = JSON.parse(state.bossProfilesJson || "{}"); }
       catch (_) { throw new Error("Boss 属性 JSON 无法解析。"); }
+      const roster = readRemoteRoster();
       await remoteApi("/v1/leader/config", "PUT", buildRemoteConfigPayload({
         life: latestPlan.lifeAssignments.map((group) => group.trial),
         combat: latestPlan.combatAssignments.map((group) => group.trial),
-      }, state.remoteGuildId, weekId, bossProfiles));
+      }, state.remoteGuildId, weekId, bossProfiles, roster));
       const payload = buildRemoteAssignmentPayload(latestPlan, state.remoteGuildId, weekId, remoteMembers);
       const result = await remoteApi("/v1/leader/assignment", "PUT", payload);
       setStatus(`已发布本周方案，${result.memberCount} 名已上传会员可在会员端查看。`);
@@ -1114,15 +1092,6 @@
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
     return data;
-  }
-
-  function buildRemoteInviteMembers(members, cache) {
-    const normalize = (value) => String(value || "").toLowerCase().replace(/\s+/g, "");
-    return (members || []).map((member) => {
-      const name = String(member?.name || "").trim();
-      const characterId = String(cache?.[normalize(name)]?.characterId || "").trim();
-      return { name, ...(/^[A-Za-z0-9_-]{1,64}$/.test(characterId) ? { memberId: characterId } : {}) };
-    }).filter((member) => member.name);
   }
 
   function buildRemoteAssignmentPayload(plan, guildId, weekId, uploadedMembers) {
@@ -1155,14 +1124,27 @@
     return { guildId, weekId, generatedAt: plan?.generatedAt || "", members };
   }
 
-  function buildRemoteConfigPayload(trials, guildId, weekId, bossProfiles) {
+  function buildRemoteConfigPayload(trials, guildId, weekId, bossProfiles, rosterMembers) {
+    const names = new Map();
+    (rosterMembers || []).forEach((member) => {
+      const name = String(member?.name || member || "").trim().slice(0, 40);
+      const key = name.toLowerCase().replace(/\s+/g, "");
+      if (key && !names.has(key)) names.set(key, name);
+    });
     return {
       guildId,
       weekId,
       lifeTrials: (trials?.life || []).map((trial) => ({ key: trial.key, zh: trial.zh || trial.key, capacity: Number(trial.capacity) || 0, signed: Number(trial.signed) || 0 })),
       combatTrials: (trials?.combat || []).map((trial) => ({ key: trial.key, zh: trial.zh || trial.key, capacity: Number(trial.capacity) || 0, signed: Number(trial.signed) || 0 })),
+      memberNames: [...names.values()],
       bossProfiles: bossProfiles || {},
     };
+  }
+
+  function readRemoteRoster() {
+    const members = parseCsv(state.membersCsv).map(normalizeMember).filter((member) => member.name);
+    if (!members.length) throw new Error("成员 CSV 为空，请先在公会成员页读取成员。");
+    return members;
   }
 
   function getCurrentWeekId() {

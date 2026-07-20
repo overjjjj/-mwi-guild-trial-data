@@ -1,5 +1,4 @@
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 const LIFE_SKILLS = [
   "milking", "foraging", "woodcutting", "cheesesmithing", "crafting",
@@ -34,39 +33,6 @@ export async function deriveMemberId(name) {
   if (!normalized) throw new Error("Invalid member name");
   const digest = new Uint8Array(await globalThis.crypto.subtle.digest("SHA-256", encoder.encode(normalized)));
   return `m-${Array.from(digest.slice(0, 10), (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
-}
-
-export async function createMemberToken(secret, identity, now = Date.now(), ttlMs = 30 * 86_400_000) {
-  const payload = {
-    guildId: sanitizeId(identity.guildId, "guildId"),
-    memberId: sanitizeId(identity.memberId, "memberId"),
-    name: cleanText(identity.name, 40),
-    iat: Math.floor(now / 1000),
-    exp: Math.floor((now + ttlMs) / 1000),
-  };
-  if (!payload.name) throw new Error("Invalid member name");
-  const body = base64UrlEncode(encoder.encode(JSON.stringify(payload)));
-  const signature = await signHmac(secret, body);
-  return `${body}.${base64UrlEncode(signature)}`;
-}
-
-export async function verifyMemberToken(secret, token, now = Date.now()) {
-  const [body, signature, extra] = String(token || "").split(".");
-  if (!body || !signature || extra) throw new Error("Invalid member token");
-  const expected = await signHmac(secret, body);
-  const actual = base64UrlDecode(signature);
-  if (!timingSafeEqual(expected, actual)) throw new Error("Invalid member token signature");
-  let payload;
-  try {
-    payload = JSON.parse(decoder.decode(base64UrlDecode(body)));
-  } catch (_) {
-    throw new Error("Invalid member token payload");
-  }
-  sanitizeId(payload.guildId, "guildId");
-  sanitizeId(payload.memberId, "memberId");
-  if (!payload.name || !Number.isFinite(payload.exp)) throw new Error("Invalid member token payload");
-  if (Math.floor(now / 1000) >= payload.exp) throw new Error("Member token expired");
-  return payload;
 }
 
 export function normalizeMemberProfile(input, identity, updatedAt = new Date().toISOString()) {
@@ -141,14 +107,6 @@ export function selectMemberAssignment(assignment, identity) {
   return Object.values(members).find((member) => String(member?.name || "").toLowerCase().replace(/\s+/g, "") === normalizedName) || null;
 }
 
-async function signHmac(secret, message) {
-  if (!secret) throw new Error("Missing token secret");
-  const key = await globalThis.crypto.subtle.importKey(
-    "raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
-  );
-  return new Uint8Array(await globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(message)));
-}
-
 function cleanText(value, maxLength) {
   return String(value || "").trim().slice(0, maxLength);
 }
@@ -162,31 +120,4 @@ function finiteNumber(value, min, max) {
   const number = Number(value);
   if (!Number.isFinite(number)) return 0;
   return Math.min(max, Math.max(min, number));
-}
-
-function timingSafeEqual(left, right) {
-  if (left.length !== right.length) return false;
-  let difference = 0;
-  for (let index = 0; index < left.length; index += 1) difference |= left[index] ^ right[index];
-  return difference === 0;
-}
-
-function base64UrlEncode(bytes) {
-  return base64Encode(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function base64UrlDecode(text) {
-  const normalized = String(text || "").replace(/-/g, "+").replace(/_/g, "/");
-  return base64Decode(normalized + "=".repeat((4 - normalized.length % 4) % 4));
-}
-
-function base64Encode(bytes) {
-  let binary = "";
-  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
-  return btoa(binary);
-}
-
-function base64Decode(text) {
-  const binary = atob(String(text || ""));
-  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
 }

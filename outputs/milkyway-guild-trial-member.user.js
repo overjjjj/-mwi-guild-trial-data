@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼会员端
 // @namespace    https://www.milkywayidle.com/
-// @version      0.2.0
-// @description  上传本角色的公会试炼资料，并显示个人适配和会长发布的分配。
+// @version      0.3.0
+// @description  按公会名单和角色名上传本角色的公会试炼资料，并显示个人适配和正式分配。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
 // @match        https://test.milkywayidle.com/*
@@ -79,7 +79,7 @@
       <div class="mwi-gtm-head"><div class="mwi-gtm-title">公会试炼会员端</div><button class="mwi-gtm-btn" data-action="close">关闭</button></div>
       <div class="mwi-gtm-body">
         <label class="mwi-gtm-field">服务地址<input id="mwi-gtm-endpoint" type="url" placeholder="https://your-project.vercel.app"></label>
-        <label class="mwi-gtm-field">会员邀请令牌<textarea id="mwi-gtm-token" spellcheck="false" placeholder="粘贴会长发给你的令牌"></textarea></label>
+        <label class="mwi-gtm-field">公会 ID<input id="mwi-gtm-guild" type="text" placeholder="例如 guild-cn-1"></label>
         <div class="mwi-gtm-actions">
           <button class="mwi-gtm-btn" data-action="save">保存设置</button>
           <button class="mwi-gtm-btn" data-action="read">读取本角色</button>
@@ -94,13 +94,13 @@
     `;
     document.body.appendChild(panel);
     const el = {
-      endpoint: panel.querySelector("#mwi-gtm-endpoint"), token: panel.querySelector("#mwi-gtm-token"),
+      endpoint: panel.querySelector("#mwi-gtm-endpoint"), guild: panel.querySelector("#mwi-gtm-guild"),
       status: panel.querySelector("#mwi-gtm-status"), profile: panel.querySelector("#mwi-gtm-profile"),
       recommendations: panel.querySelector("#mwi-gtm-recommendations"), assignment: panel.querySelector("#mwi-gtm-assignment"),
     };
     const saved = loadSettings();
     el.endpoint.value = saved.endpoint || "";
-    el.token.value = saved.token || "";
+    el.guild.value = saved.guildId || "";
     currentProfile = saved.lastProfile || null;
     if (currentProfile) renderProfile(el, currentProfile);
 
@@ -163,13 +163,18 @@
 
   async function apiRequest(el, path, method, body) {
     const endpoint = el.endpoint.value.trim().replace(/\/+$/, "");
-    const token = el.token.value.trim();
     if (!/^https:\/\//i.test(endpoint)) throw new Error("服务地址必须使用 HTTPS。");
-    if (!token) throw new Error("请填写会员邀请令牌。");
-    const response = await fetch(`${endpoint}${path}`, {
+    const identity = normalizeMemberIdentity(el.guild.value, currentProfile?.name);
+    const url = new URL(`${endpoint}${path}`);
+    if (!body) {
+      url.searchParams.set("guildId", identity.guildId);
+      url.searchParams.set("name", identity.name);
+    }
+    const requestBody = body ? { ...body, guildId: identity.guildId, profile: { ...body.profile, name: identity.name } } : null;
+    const response = await fetch(url, {
       method,
-      headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
-      ...(body ? { body: JSON.stringify(body) } : {}),
+      headers: requestBody ? { "Content-Type": "application/json" } : {},
+      ...(requestBody ? { body: JSON.stringify(requestBody) } : {}),
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
@@ -178,7 +183,7 @@
 
   function renderProfile(el, profile) {
     el.profile.innerHTML = `<div class="mwi-gtm-section"><h3>本地角色资料</h3><table class="mwi-gtm-table"><tbody>
-      <tr><th>角色</th><td>${escapeHtml(profile.name || "由邀请令牌确定")}</td></tr>
+      <tr><th>角色</th><td>${escapeHtml(profile.name || "尚未读取")}</td></tr>
       <tr><th>战斗</th><td>等级 ${profile.values.combatLevel || 0}；${escapeHtml(profile.values.weaponType || "未知武器")}；装备 ${profile.equipment.length}；能力 ${profile.abilities.length}</td></tr>
       <tr><th>专业</th><td>${Object.entries(profile.lifeSkills).map(([key, value]) => `${escapeHtml(key)} ${value}`).join("，") || "未读取"}</td></tr>
     </tbody></table></div>`;
@@ -214,7 +219,15 @@
   }
 
   function saveSettings(el) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ endpoint: el.endpoint.value.trim(), token: el.token.value.trim(), lastProfile: currentProfile }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ endpoint: el.endpoint.value.trim(), guildId: el.guild.value.trim(), lastProfile: currentProfile }));
+  }
+
+  function normalizeMemberIdentity(guildIdValue, nameValue) {
+    const guildId = String(guildIdValue || "").trim();
+    const name = String(nameValue || "").trim();
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(guildId)) throw new Error("公会 ID 只能包含字母、数字、下划线和连字符。");
+    if (!name) throw new Error("请先读取本角色，确认角色名后再上传或刷新。");
+    return { guildId, name };
   }
 
   function setStatus(el, message) { el.status.textContent = message; }

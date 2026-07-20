@@ -27,22 +27,7 @@ if (fs.existsSync(corePath)) {
     assert.match(first, /^m-[a-f0-9]{20}$/);
   });
 
-  test("member tokens are signed, scoped and expire", async () => {
-    const now = Date.parse("2026-07-20T00:00:00Z");
-    const token = await core.createMemberToken("invite-secret", {
-      guildId: "guild-1",
-      memberId: "member-1",
-      name: "Alice",
-    }, now, 60_000);
-    const payload = await core.verifyMemberToken("invite-secret", token, now + 30_000);
-    assert.equal(payload.guildId, "guild-1");
-    assert.equal(payload.memberId, "member-1");
-    assert.equal(payload.name, "Alice");
-    await assert.rejects(() => core.verifyMemberToken("invite-secret", `${token}x`, now), /token/i);
-    await assert.rejects(() => core.verifyMemberToken("invite-secret", token, now + 60_001), /expired/i);
-  });
-
-  test("member uploads are minimized and bound to the signed identity", () => {
+  test("member uploads are minimized and bound to the canonical roster identity", () => {
     const normalized = core.normalizeMemberProfile({
       name: "ForgedName",
       values: { combatLevel: 136, magic: 142, unknown: 999 },

@@ -19,8 +19,8 @@ test("repository root declares an ESM package and verification scripts", () => {
   assert.equal(fs.existsSync(packagePath), true, "package.json should exist at repository root");
   const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   assert.equal(pkg.type, "module");
-  assert.equal(pkg.scripts.test, "node root-deploy.test.mjs && node outputs/remote-worker/test/all.mjs");
-  assert.equal(pkg.scripts.check, "node --check api/index.js");
+  assert.equal(pkg.scripts.test, "node root-deploy.test.mjs && node outputs/remote-worker/test/all.mjs && node outputs/milkyway-guild-trial-member.test.js && node outputs/milkyway-guild-trial-allocator.test.js");
+  assert.equal(pkg.scripts.check, "node --check api/index.js && node --check outputs/milkyway-guild-trial-member.user.js && node --check outputs/milkyway-guild-trial-allocator.user.js");
 });
 
 test("repository root rewrites public v1 routes to the API entry", () => {

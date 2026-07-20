@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node root-deploy.test.mjs && node outputs/remote-worker/test/all.mjs",
-    "check": "node --check api/index.js"
+    "test": "node root-deploy.test.mjs && node outputs/remote-worker/test/all.mjs && node outputs/milkyway-guild-trial-member.test.js && node outputs/milkyway-guild-trial-allocator.test.js",
+    "check": "node --check api/index.js && node --check outputs/milkyway-guild-trial-member.user.js && node --check outputs/milkyway-guild-trial-allocator.user.js"
   }
 }

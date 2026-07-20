@@ -1,11 +1,9 @@
 import {
-  createMemberToken,
   deriveMemberId,
   getWeekId,
   normalizeMemberProfile,
   sanitizeId,
   selectMemberAssignment,
-  verifyMemberToken,
 } from "./core.js";
 import { GitHubRepository } from "./github.js";
 
@@ -21,38 +19,22 @@ export function createWorkerApp(env, options = {}) {
         if (url.pathname === "/v1/health" && request.method === "GET") {
           return respond(request, env, { ok: true, weekId: getWeekId(new Date(now())) });
         }
-        if (url.pathname === "/v1/leader/invites" && request.method === "POST") {
-          requireLeader(request, env);
+        if (url.pathname === "/v1/member/profile" && request.method === "POST") {
           const body = await readJson(request);
           const guildId = sanitizeId(body.guildId, "guildId");
-          const members = Array.isArray(body.members) ? body.members.slice(0, 200) : [];
-          if (!members.length) throw httpError(400, "members is required");
-          const ttlMs = Math.max(86_400_000, Math.min(Number(env.MEMBER_TOKEN_TTL_DAYS || 90) * 86_400_000, 365 * 86_400_000));
-          const invites = [];
-          for (const member of members) {
-            const name = String(member?.name || "").trim().slice(0, 40);
-            if (!name) continue;
-            const memberId = member.memberId ? sanitizeId(member.memberId, "memberId") : await deriveMemberId(name);
-            const token = await createMemberToken(required(env.MEMBER_TOKEN_SECRET, "MEMBER_TOKEN_SECRET"), { guildId, memberId, name }, now(), ttlMs);
-            invites.push({ memberId, name, token });
-          }
-          return respond(request, env, { guildId, invites });
-        }
-        if (url.pathname === "/v1/member/profile" && request.method === "POST") {
-          const identity = await requireMember(request, env, now());
-          const body = await readJson(request);
           const weekId = validateWeekId(body.weekId || getWeekId(new Date(now())));
+          const { identity } = await requireRosterMember(repository, guildId, weekId, body.profile?.name);
           const profile = normalizeMemberProfile(body.profile, identity, new Date(now()).toISOString());
           await repository.writeJson(memberPath(identity.guildId, weekId, identity.memberId), profile);
           return respond(request, env, { ok: true, guildId: identity.guildId, memberId: identity.memberId, weekId, updatedAt: profile.updatedAt });
         }
         if (url.pathname === "/v1/member/status" && request.method === "GET") {
-          const identity = await requireMember(request, env, now());
+          const guildId = sanitizeId(url.searchParams.get("guildId"), "guildId");
           const weekId = validateWeekId(url.searchParams.get("weekId") || getWeekId(new Date(now())));
+          const { identity, config } = await requireRosterMember(repository, guildId, weekId, url.searchParams.get("name"));
           const root = weekRoot(identity.guildId, weekId);
-          const [profile, config, assignment] = await Promise.all([
+          const [profile, assignment] = await Promise.all([
             repository.readJson(memberPath(identity.guildId, weekId, identity.memberId)),
-            repository.readJson(`${root}/config.json`),
             repository.readJson(`${root}/assignment.json`),
           ]);
           return respond(request, env, {
@@ -122,8 +104,19 @@ function normalizeConfig(body, now) {
     updatedAt: new Date(now).toISOString(),
     lifeTrials: normalizeTrials(body.lifeTrials, 4),
     combatTrials: normalizeTrials(body.combatTrials, 2),
+    memberNames: normalizeMemberNames(body.memberNames),
     bossProfiles: body.bossProfiles && typeof body.bossProfiles === "object" ? body.bossProfiles : {},
   };
+}
+
+function normalizeMemberNames(input) {
+  const members = new Map();
+  (Array.isArray(input) ? input : []).slice(0, 500).forEach((value) => {
+    const name = String(value || "").trim().slice(0, 40);
+    const key = normalizeName(name);
+    if (key && !members.has(key)) members.set(key, name);
+  });
+  return [...members.values()];
 }
 
 function normalizeAssignments(input) {
@@ -149,14 +142,22 @@ function normalizeAssignmentPart(part) {
   };
 }
 
-async function requireMember(request, env, now) {
-  const token = readBearer(request);
-  if (!token) throw httpError(401, "Member token required");
-  try {
-    return await verifyMemberToken(required(env.MEMBER_TOKEN_SECRET, "MEMBER_TOKEN_SECRET"), token, now);
-  } catch (error) {
-    throw httpError(401, error.message);
-  }
+async function requireRosterMember(repository, guildId, weekId, requestedName) {
+  const name = String(requestedName || "").trim().slice(0, 40);
+  if (!name) throw httpError(400, "Player name is required");
+  const config = await repository.readJson(`${weekRoot(guildId, weekId)}/config.json`);
+  if (!config) throw httpError(409, "Guild roster is not synchronized");
+  const canonicalName = (Array.isArray(config.memberNames) ? config.memberNames : [])
+    .find((memberName) => normalizeName(memberName) === normalizeName(name));
+  if (!canonicalName) throw httpError(403, "Player is not in the synchronized guild roster");
+  return {
+    identity: { guildId, memberId: await deriveMemberId(canonicalName), name: canonicalName },
+    config,
+  };
+}
+
+function normalizeName(value) {
+  return String(value || "").toLowerCase().replace(/\s+/g, "");
 }
 
 function requireLeader(request, env) {
