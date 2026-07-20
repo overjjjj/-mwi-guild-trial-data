@@ -1,0 +1,10 @@
+{
+  "name": "mwi-guild-trial-remote-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test/all.mjs",
+    "check": "node --check api/index.js",
+    "deploy": "npx vercel --prod"
+  }
+}
