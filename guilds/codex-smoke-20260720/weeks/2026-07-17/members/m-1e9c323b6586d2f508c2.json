@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "guildId": "codex-smoke-20260720",
+  "memberId": "m-1e9c323b6586d2f508c2",
+  "name": "CodexSmoke",
+  "updatedAt": "2026-07-20T08:47:07.884Z",
+  "values": {
+    "magicLevel": 123,
+    "combatLevel": 123
+  },
+  "lifeSkills": {
+    "foraging": 120
+  },
+  "equipment": [],
+  "abilities": [],
+  "triggerMap": {},
+  "houseRooms": {}
+}
