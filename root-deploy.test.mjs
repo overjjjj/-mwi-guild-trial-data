@@ -28,6 +28,7 @@ test("repository root rewrites public v1 routes to the API entry", () => {
   const config = JSON.parse(fs.readFileSync(vercelPath, "utf8"));
   assert.equal(config.installCommand, "");
   assert.equal(config.buildCommand, "npm run check");
+  assert.equal(config.outputDirectory, null);
   assert.deepEqual(config.rewrites, [
     {
       source: "/v1/:path*",

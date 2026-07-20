@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "",
   "buildCommand": "npm run check",
+  "outputDirectory": null,
   "rewrites": [
     {
       "source": "/v1/:path*",
