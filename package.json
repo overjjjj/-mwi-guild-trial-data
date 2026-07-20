@@ -1,0 +1,9 @@
+{
+  "name": "mwi-guild-trial",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node root-deploy.test.mjs && node outputs/remote-worker/test/all.mjs",
+    "check": "node --check api/index.js"
+  }
+}
