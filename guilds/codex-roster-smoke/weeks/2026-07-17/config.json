@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "guildId": "codex-roster-smoke",
+  "weekId": "2026-07-17",
+  "updatedAt": "2026-07-20T09:38:27.719Z",
+  "lifeTrials": [
+    {
+      "key": "foraging",
+      "zh": "??",
+      "capacity": 20,
+      "signed": 0
+    }
+  ],
+  "combatTrials": [
+    {
+      "key": "swarm",
+      "zh": "??",
+      "capacity": 40,
+      "signed": 0
+    }
+  ],
+  "memberNames": [
+    "CodexNoToken"
+  ],
+  "bossProfiles": {}
+}
