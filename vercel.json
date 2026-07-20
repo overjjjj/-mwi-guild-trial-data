@@ -1,10 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "",
+  "buildCommand": "npm run check",
   "rewrites": [
     {
       "source": "/v1/:path*",
-      "destination": "/api?__mwi_path=:path*"
+      "destination": "/api?__mwi_path=:path"
     }
   ]
 }

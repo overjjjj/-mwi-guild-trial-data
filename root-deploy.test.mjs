@@ -27,10 +27,11 @@ test("repository root rewrites public v1 routes to the API entry", () => {
   assert.equal(fs.existsSync(vercelPath), true, "vercel.json should exist at repository root");
   const config = JSON.parse(fs.readFileSync(vercelPath, "utf8"));
   assert.equal(config.installCommand, "");
+  assert.equal(config.buildCommand, "npm run check");
   assert.deepEqual(config.rewrites, [
     {
       source: "/v1/:path*",
-      destination: "/api?__mwi_path=:path*",
+      destination: "/api?__mwi_path=:path",
     },
   ]);
 });
