@@ -2,7 +2,23 @@
   "schemaVersion": 1,
   "guildId": "DaisyCamp",
   "weekId": "2026-07-17",
-  "generatedAt": "2026/7/21 14:25:24",
-  "publishedAt": "2026-07-21T06:25:45.752Z",
-  "members": {}
+  "generatedAt": "2026/7/21 14:28:43",
+  "publishedAt": "2026-07-21T06:29:05.062Z",
+  "members": {
+    "m-3e74f304124d2f633bbb": {
+      "name": "zc0804",
+      "life": {
+        "trialKey": "foraging",
+        "trialName": "采摘",
+        "score": 104,
+        "reason": "全局最高总值、保持原报名"
+      },
+      "combat": {
+        "trialKey": "badger",
+        "trialName": "獾",
+        "score": 52.9,
+        "reason": "低魔闪374、人数缩放通过、保持原报名"
+      }
+    }
+  }
 }
