@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.13.0
+// @version      0.14.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
@@ -70,7 +70,7 @@
     },
   };
 
-  const CSV_HEADERS = ["name", "level", "lifeLevel", "combatLevel", "currentLife", "currentCombat", "foraging", "woodcutting", "alchemy", "enhancing", "combat", "aoe", "single", "physical", "magic", "tank", "healer", "sustain", "support", "role", "damageType", "preferLife", "preferCombat", "avoid"];
+  const CSV_HEADERS = ["name", "level", "lifeLevel", "combatLevel", "currentLife", "currentCombat", "foraging", "woodcutting", "alchemy", "enhancing", "combat", "aoe", "single", "physical", "magic", "tank", "healer", "sustain", "support", "role", "damageType", "preferLife", "preferCombat", "avoid", "fixedCombat"];
   const EMPTY_CSV = CSV_HEADERS.join(",");
   const EXAMPLE_CSV = [
     EMPTY_CSV,
@@ -470,9 +470,10 @@
         <p class="mwi-gta-note">CSV 第一行必须是表头。评分应基于试炼所选配装的快照，不计消耗品，并包含当前公会建筑和神龛增益；数值越高越优先。</p>
         <table class="mwi-gta-table">
           <tbody>
-            <tr><th>字段</th><td>name 必填；自动字段为 level/lifeLevel/combatLevel/currentLife/currentCombat；生活字段支持 milking/foraging/woodcutting/cheesesmithing/crafting/tailoring/cooking/brewing/alchemy/enhancing；战斗字段支持 combat/aoe/single/physical/magic/stab/slash/blunt/ranged/tank/healer/sustain/support/power、role、damageType。</td></tr>
+            <tr><th>字段</th><td>name 必填；自动字段为 level/lifeLevel/combatLevel/currentLife/currentCombat；生活字段支持 milking/foraging/woodcutting/cheesesmithing/crafting/tailoring/cooking/brewing/alchemy/enhancing；战斗字段支持 combat/aoe/single/physical/magic/stab/slash/blunt/ranged/tank/healer/sustain/support/power、role、damageType。减益角色可设 role=debuff，并用 fixedCombat 固定到本周某场战斗试炼。</td></tr>
             <tr><th>Boss 属性</th><td>支持獾、变色龙、水母、刺猬、虫群五种遭遇。按当周两个 Boss 的属性权重分配，并检查成员边际贡献是否足以抵消每名参与者带来的 1% 怪物 HP 增长。</td></tr>
             <tr><th>周规则</th><td>每周五 00:00 UTC 重置；每人最多报名 1 场生活和 1 场战斗。试炼与正常行动并行，使用报名配装快照且不使用消耗品，从 Lv.100 起每层 +10，最高 Lv.300。</td></tr>
+            <tr><th>分配</th><td>fixedCombat 是硬约束，会先占位；剩余名额按近似 Leximin 优先提高最弱组的折算强度。生活自动读取值是专业等级，也可手填每小时有效产出，后者更准确。</td></tr>
             <tr><th>偏好</th><td>preferLife、preferCombat 可填 key 或中文名，会给该成员加分。avoid 可用英文逗号或竖线分隔多个不想去的试炼。</td></tr>
             <tr><th>页面读取</th><td>在“试炼”页读取试炼和名额；在“成员”页读取姓名和报名方向。打开公开成员资料后，可在“概览”或“专业”页点击“读取当前资料”，缓存总等级、战斗等级、战力和10项生活等级。</td></tr>
             <tr><th>角色导出</th><td>可粘贴模拟器角色 JSON，或读取其他兼容脚本公开的 MWI_INTEGRATED.getSimulatorData()。导入战斗等级、武器类别、非生产装备、能力与战斗房屋摘要；试炼禁用的食物和饮料不会计入。导出没有角色名时必须手工绑定或先打开对应成员资料。</td></tr>
@@ -1229,68 +1230,37 @@
   }
 
   function assignLifeByBestSkill(members, trials) {
-    const buckets = new Map(trials.map((trial) => [trial.key, { trial, members: [] }]));
-    const source = 0;
-    const memberStart = 1;
-    const trialStart = memberStart + members.length;
-    const sink = trialStart + trials.length;
-    const graph = Array.from({ length: sink + 1 }, () => []);
-    const addEdge = (from, to, capacity, cost, assignment = null) => {
-      const forward = { to, rev: graph[to].length, capacity, cost, assignment };
-      const reverse = { to: from, rev: graph[from].length, capacity: 0, cost: -cost, assignment: null };
-      graph[from].push(forward);
-      graph[to].push(reverse);
-    };
+    const buckets = new Map(trials.map((trial) => [trial.key, {
+      trial,
+      members: [],
+      fairnessActive: trialAvailableCapacity(trial) > 0,
+    }]));
+    const candidates = members.map((member) => {
+      const scores = trials.map((trial) => ({ trial, score: scoreMember(member, trial, "life") }))
+        .filter((option) => option.score > 0)
+        .sort((a, b) => b.score - a.score);
+      return {
+        member,
+        scores,
+        edge: (scores[0]?.score || 0) - (scores[1]?.score || 0),
+      };
+    }).filter((candidate) => candidate.scores.length);
 
-    members.forEach((member, memberIndex) => {
-      addEdge(source, memberStart + memberIndex, 1, 0);
-      trials.forEach((trial, trialIndex) => {
-        const score = scoreMember(member, trial, "life");
-        if (score <= 0) return;
-        addEdge(memberStart + memberIndex, trialStart + trialIndex, 1, -Math.round(score * 100), { memberIndex, trialKey: trial.key, score });
-      });
+    candidates.sort((a, b) => {
+      if (b.edge !== a.edge) return b.edge - a.edge;
+      if (b.scores[0].score !== a.scores[0].score) return b.scores[0].score - a.scores[0].score;
+      return a.member.name.localeCompare(b.member.name);
     });
-    trials.forEach((trial, trialIndex) => addEdge(trialStart + trialIndex, sink, trialAvailableCapacity(trial), 0));
 
-    while (true) {
-      const distance = Array(graph.length).fill(Infinity);
-      const previousNode = Array(graph.length).fill(-1);
-      const previousEdge = Array(graph.length).fill(-1);
-      const queued = Array(graph.length).fill(false);
-      const queue = [source];
-      distance[source] = 0;
-      queued[source] = true;
-      for (let head = 0; head < queue.length; head += 1) {
-        const node = queue[head];
-        queued[node] = false;
-        graph[node].forEach((edge, edgeIndex) => {
-          if (edge.capacity <= 0 || distance[edge.to] <= distance[node] + edge.cost) return;
-          distance[edge.to] = distance[node] + edge.cost;
-          previousNode[edge.to] = node;
-          previousEdge[edge.to] = edgeIndex;
-          if (!queued[edge.to]) {
-            queue.push(edge.to);
-            queued[edge.to] = true;
-          }
-        });
-      }
-      if (!Number.isFinite(distance[sink]) || distance[sink] >= 0) break;
-      for (let node = sink; node !== source; node = previousNode[node]) {
-        const edge = graph[previousNode[node]][previousEdge[node]];
-        edge.capacity -= 1;
-        graph[node][edge.rev].capacity += 1;
-      }
-    }
-
-    members.forEach((member, memberIndex) => {
-      graph[memberStart + memberIndex].forEach((edge) => {
-        if (!edge.assignment || edge.capacity !== 0) return;
-        const bucket = buckets.get(edge.assignment.trialKey);
-        bucket.members.push({
-          name: member.name,
-          score: Math.round(edge.assignment.score * 10) / 10,
-          note: ["全局最高总值", makeSignupChangeReason(member, bucket.trial, "life")].filter(Boolean).join("、"),
-        });
+    candidates.forEach((candidate) => {
+      const options = candidate.scores.filter((option) => hasCapacity(buckets.get(option.trial.key)));
+      const choice = chooseLeximinOption(options, buckets, scaledGroupStrength);
+      if (!choice) return;
+      const bucket = buckets.get(choice.trial.key);
+      bucket.members.push({
+        name: candidate.member.name,
+        score: Math.round(choice.score * 10) / 10,
+        note: ["近似Leximin均衡", makeSignupChangeReason(candidate.member, bucket.trial, "life")].filter(Boolean).join("、"),
       });
     });
 
@@ -1310,8 +1280,31 @@
   }
 
   function assignCombatByBossProfiles(members, trials, profiles) {
-    const buckets = new Map(trials.map((trial) => [trial.key, { trial, members: [] }]));
-    const candidates = members.map((member) => {
+    const buckets = new Map(trials.map((trial) => [trial.key, {
+      trial,
+      members: [],
+      fairnessActive: trialAvailableCapacity(trial) > 0,
+    }]));
+    const fixedMembers = new Set(members.filter((member) => member.fixedCombat));
+    const fixedCandidates = Array.from(fixedMembers).map((member) => {
+      const trial = trials.find((item) => matchesPreference(member.fixedCombat, item));
+      if (!trial) return null;
+      const score = Math.max(0, scoreCombatByProfile({ ...member, avoid: new Set() }, trial, profiles[trial.key]));
+      return { member, trial, score };
+    }).filter(Boolean).sort((a, b) => b.score - a.score || a.member.name.localeCompare(b.member.name));
+
+    fixedCandidates.forEach((candidate) => {
+      const bucket = buckets.get(candidate.trial.key);
+      if (!hasCapacity(bucket)) return;
+      const reason = makeCombatProfileReason(candidate.member, candidate.trial, profiles[candidate.trial.key]);
+      bucket.members.push({
+        name: candidate.member.name,
+        score: Math.round(candidate.score * 10) / 10,
+        note: ["固定位置", reason, makeSignupChangeReason(candidate.member, candidate.trial, "combat")].filter(Boolean).join("、"),
+      });
+    });
+
+    const candidates = members.filter((member) => !fixedMembers.has(member)).map((member) => {
       const scores = trials.map((trial) => ({
         trial,
         score: scoreCombatByProfile(member, trial, profiles[trial.key]),
@@ -1323,25 +1316,63 @@
 
     candidates.sort((a, b) => {
       if (b.edge !== a.edge) return b.edge - a.edge;
-      return b.scores[0].score - a.scores[0].score;
+      if (b.scores[0].score !== a.scores[0].score) return b.scores[0].score - a.scores[0].score;
+      return a.member.name.localeCompare(b.member.name);
     });
 
     candidates.forEach((candidate) => {
-      for (const option of candidate.scores) {
+      const options = candidate.scores.filter((option) => {
         const bucket = buckets.get(option.trial.key);
-        if (!canJoinCombat(candidate.member, bucket)) continue;
-        if (!passesCombatScaling(bucket, option.score)) continue;
-        const reason = makeCombatProfileReason(candidate.member, option.trial, profiles[option.trial.key]);
-        bucket.members.push({
-          name: candidate.member.name,
-          score: Math.round(option.score * 10) / 10,
-          note: [reason, "人数缩放通过", makeSignupChangeReason(candidate.member, bucket.trial, "combat")].filter(Boolean).join("、"),
-        });
-        break;
-      }
+        return canJoinCombat(candidate.member, bucket) && passesCombatScaling(bucket, option.score);
+      });
+      const choice = chooseLeximinOption(options, buckets, scaledGroupStrength);
+      if (!choice) return;
+      const bucket = buckets.get(choice.trial.key);
+      const reason = makeCombatProfileReason(candidate.member, choice.trial, profiles[choice.trial.key]);
+      bucket.members.push({
+        name: candidate.member.name,
+        score: Math.round(choice.score * 10) / 10,
+        note: [reason, "近似Leximin均衡", "人数缩放通过", makeSignupChangeReason(candidate.member, bucket.trial, "combat")].filter(Boolean).join("、"),
+      });
     });
 
     return Array.from(buckets.values());
+  }
+
+  function compareLeximinVectors(left, right) {
+    const length = Math.max(left.length, right.length);
+    for (let index = 0; index < length; index += 1) {
+      const difference = (left[index] ?? -Infinity) - (right[index] ?? -Infinity);
+      if (Math.abs(difference) > 1e-9) return difference;
+    }
+    return 0;
+  }
+
+  function chooseLeximinOption(options, buckets, strengthFn) {
+    let best = null;
+    options.forEach((option) => {
+      const bucket = buckets.get(option.trial.key);
+      if (!bucket) return;
+      bucket.members.push({ score: option.score });
+      const vector = Array.from(buckets.values())
+        .filter((item) => item.fairnessActive !== false)
+        .map((item) => strengthFn(item))
+        .sort((a, b) => a - b);
+      bucket.members.pop();
+      const comparison = best ? compareLeximinVectors(vector, best.vector) : 1;
+      if (comparison > 0 || (comparison === 0 && option.score > best.option.score)) {
+        best = { option, vector };
+      }
+    });
+    return best?.option || null;
+  }
+
+  function scaledGroupStrength(bucket) {
+    const total = bucket.members.reduce((sum, member) => {
+      const score = Number(member.score);
+      return sum + (Number.isFinite(score) ? score : 0);
+    }, 0);
+    return total / (1 + 0.01 * bucket.members.length);
   }
 
   function passesCombatScaling(bucket, candidateScore) {
@@ -1411,7 +1442,7 @@
     if (key === "tank") return numberValue(member.raw.tank) || (member.role === "tank" ? memberCombatPower(member) : 0);
     if (key === "healer") return numberValue(member.raw.healer) || (member.role === "healer" ? memberCombatPower(member) : 0);
     if (key === "sustain") return numberValue(member.raw.sustain) || numberValue(member.raw.survival) || numberValue(member.raw.defense);
-    if (key === "support") return numberValue(member.raw.support) || numberValue(member.raw.aura) || numberValue(member.raw.revive) || numberValue(member.raw.debuff);
+    if (key === "support") return numberValue(member.raw.support) || numberValue(member.raw.aura) || numberValue(member.raw.revive) || numberValue(member.raw.debuff) || (member.role === "debuff" ? memberCombatPower(member) : 0);
     return numberValue(member.raw[key]);
   }
 
@@ -1614,8 +1645,9 @@
       const signed = Number.isFinite(group.trial.signed) ? `<br><span style="color:#8792b7">${signedLabel} ${group.trial.signed}/${group.trial.capacity}</span>` : "";
       const hpScale = group.trial.type === "combat" ? `<br><span style="color:#8792b7">预计HP ×${combatHpMultiplier(group).toFixed(2)}</span>` : "";
       const totalScore = group.members.reduce((sum, member) => sum + numberValue(member.score), 0);
-      const total = group.trial.type === "life" ? `<br><span style="color:#bfffe8">组总值 ${Math.round(totalScore * 10) / 10}</span>` : "";
-      return `<tr><td>${escapeHtml(group.trial.zh)}</td><td>${group.members.length}/${available}${signed}${total}${hpScale}</td><td>${names || "<span style='color:#8792b7'>无</span>"}</td></tr>`;
+      const effective = Math.round(scaledGroupStrength(group) * 10) / 10;
+      const strength = `<br><span style="color:#bfffe8">总值 ${Math.round(totalScore * 10) / 10} / 折算 ${effective}</span>`;
+      return `<tr><td>${escapeHtml(group.trial.zh)}</td><td>${group.members.length}/${available}${signed}${strength}${hpScale}</td><td>${names || "<span style='color:#8792b7'>无</span>"}</td></tr>`;
     }).join("");
     return `
       <table class="mwi-gta-table">
@@ -1645,11 +1677,11 @@
     lines.push("生活试炼");
     plan.lifeAssignments.forEach((group) => {
       const totalScore = group.members.reduce((sum, member) => sum + numberValue(member.score), 0);
-      lines.push(`${group.trial.zh} (建议 ${group.members.length}/${trialAvailableCapacity(group.trial)}，当前报名 ${group.trial.signed}/${group.trial.capacity}，组总值 ${Math.round(totalScore * 10) / 10}): ${group.members.map((member) => `${member.name}(${member.score}${member.note ? ", " + member.note : ""})`).join(", ") || "-"}`);
+      lines.push(`${group.trial.zh} (建议 ${group.members.length}/${trialAvailableCapacity(group.trial)}，当前报名 ${group.trial.signed}/${group.trial.capacity}，总值 ${Math.round(totalScore * 10) / 10}，折算强度 ${Math.round(scaledGroupStrength(group) * 10) / 10}): ${group.members.map((member) => `${member.name}(${member.score}${member.note ? ", " + member.note : ""})`).join(", ") || "-"}`);
     });
     lines.push("", "战斗试炼");
     plan.combatAssignments.forEach((group) => {
-      lines.push(`${group.trial.zh} (建议 ${group.members.length}/${trialAvailableCapacity(group.trial)}，当前报名 ${group.trial.signed}/${group.trial.capacity}，预计HP ×${combatHpMultiplier(group).toFixed(2)}): ${group.members.map((member) => `${member.name}(${member.score}${member.note ? ", " + member.note : ""})`).join(", ") || "-"}`);
+      lines.push(`${group.trial.zh} (建议 ${group.members.length}/${trialAvailableCapacity(group.trial)}，当前报名 ${group.trial.signed}/${group.trial.capacity}，折算强度 ${Math.round(scaledGroupStrength(group) * 10) / 10}，预计HP ×${combatHpMultiplier(group).toFixed(2)}): ${group.members.map((member) => `${member.name}(${member.score}${member.note ? ", " + member.note : ""})`).join(", ") || "-"}`);
     });
     if (plan.unassignedLife.length) lines.push("", `生活未分配: ${plan.unassignedLife.join(", ")}`);
     if (plan.unassignedCombat.length) lines.push(`战斗未分配: ${plan.unassignedCombat.join(", ")}`);
@@ -1757,6 +1789,7 @@
       preferCombat: row.preferCombat || row["战斗偏好"] || "",
       currentLife: row.currentLife || row["当前生活报名"] || "",
       currentCombat: row.currentCombat || row["当前战斗报名"] || "",
+      fixedCombat: row.fixedCombat || row["固定战斗"] || row["固定战斗试炼"] || "",
       avoid,
     };
   }
@@ -1765,6 +1798,7 @@
     const text = normalizeText(value);
     if (["tank", "t", "mt", "坦克", "盾"].includes(text)) return "tank";
     if (["healer", "heal", "h", "治疗", "奶", "奶妈"].includes(text)) return "healer";
+    if (["debuff", "debuffer", "减益", "弱化"].includes(text)) return "debuff";
     if (["dps", "输出", "打手"].includes(text)) return "dps";
     return text || "dps";
   }

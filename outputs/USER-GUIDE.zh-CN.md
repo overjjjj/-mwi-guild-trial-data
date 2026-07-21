@@ -229,6 +229,10 @@ https://mwi-guild-trial-data.vercel.app/v1/health
 4. 检查每场试炼人数、未分配成员和需要改报的成员。
 5. 点击“复制结果”可发送到公会群。
 
+需要固定减益角色时，在成员 CSV 中把 `role` 填为 `debuff` 或“减益”，并把 `fixedCombat` 填为本周 Boss 的英文 key 或中文名。固定成员会先占位，剩余名额再分配；目标未出现或名额不足时，该成员会显示为未分配，不会改派另一场。
+
+生活自动读取的数值是专业等级，只能作为有效产出的代理。也可以把对应专业列改填每小时有效工作量。生活和战斗的剩余成员都使用贪心近似 Leximin，优先提高当前最弱组的 `总评分 / (1 + 0.01 × 人数)`；这是快速均衡算法，不是枚举全部组合的精确全局解。
+
 战斗分配会根据当周遭遇类型使用不同权重：
 
 | 遭遇 | 默认侧重 |
@@ -257,12 +261,14 @@ CSV 第一行必须是表头，`name` 必填。常用字段：
 | 当前报名 | `currentLife`, `currentCombat` |
 | 生活评分 | `milking`, `foraging`, `woodcutting`, `cheesesmithing`, `crafting`, `tailoring`, `cooking`, `brewing`, `alchemy`, `enhancing` |
 | 战斗评分 | `combat`, `aoe`, `single`, `physical`, `magic`, `stab`, `slash`, `blunt`, `ranged`, `tank`, `healer`, `sustain`, `support`, `power` |
-| 分类 | `role`, `damageType` |
+| 分类 | `role`, `damageType`, `fixedCombat` |
 | 偏好 | `preferLife`, `preferCombat`, `avoid` |
 
 评分数值越高，分配优先级越高。
 
 `preferLife` 和 `preferCombat` 可以填写英文 key 或中文试炼名。`avoid` 可使用英文逗号或竖线分隔多个不想参加的试炼。
+
+`role` 支持 `debuff` 或“减益”。`fixedCombat` 是硬约束，可填 `badger`、`chameleon`、`jellyfish`、`hedgehog`、`swarm` 或对应中文名；固定位置优先于 `avoid`。
 
 ## 9. 数据与安全
 

@@ -47,6 +47,35 @@ const parseSimulatorExport = loadFunction("parseSimulatorExport");
 const buildSimulatorImportRecord = loadFunction("buildSimulatorImportRecord", { parseSimulatorExport });
 const buildRemoteAssignmentPayload = loadFunction("buildRemoteAssignmentPayload");
 const buildRemoteConfigPayload = loadFunction("buildRemoteConfigPayload");
+const compareLeximinVectors = loadFunction("compareLeximinVectors");
+const chooseLeximinOption = loadFunction("chooseLeximinOption", { compareLeximinVectors });
+const scaledGroupStrength = loadFunction("scaledGroupStrength");
+const normalizeText = loadFunction("normalizeText");
+const normalizeRole = loadFunction("normalizeRole", { normalizeText });
+const normalizeDamageType = loadFunction("normalizeDamageType", { normalizeText });
+const normalizeMember = loadFunction("normalizeMember", { normalizeRole, normalizeDamageType });
+const hasTestCapacity = (bucket) => bucket && bucket.members.length < bucket.trial.capacity;
+const assignLifeByBestSkill = loadFunction("assignLifeByBestSkill", {
+  scoreMember: (member, trial) => Number(member.raw[trial.key] || 0),
+  trialAvailableCapacity: (trial) => trial.capacity,
+  hasCapacity: hasTestCapacity,
+  chooseLeximinOption,
+  scaledGroupStrength,
+  makeSignupChangeReason: () => "",
+  assignFallbackMembers: () => {},
+});
+const assignCombatByBossProfiles = loadFunction("assignCombatByBossProfiles", {
+  trialAvailableCapacity: (trial) => trial.capacity,
+  matchesPreference: (preference, trial) => preference === trial.key || preference === trial.zh,
+  scoreCombatByProfile: (member, trial) => Number(member.raw[trial.key] || 0),
+  hasCapacity: hasTestCapacity,
+  makeCombatProfileReason: () => "",
+  makeSignupChangeReason: () => "",
+  canJoinCombat: (_member, bucket) => hasTestCapacity(bucket),
+  passesCombatScaling: () => true,
+  chooseLeximinOption,
+  scaledGroupStrength,
+});
 
 const exported = {
   player: {
@@ -135,6 +164,43 @@ const remoteConfig = buildRemoteConfigPayload({
 assert.equal(remoteConfig.lifeTrials[0].key, "foraging");
 assert.equal(remoteConfig.combatTrials[0].capacity, 40);
 assert.deepEqual(JSON.parse(JSON.stringify(remoteConfig.memberNames)), ["Alice", "测试玩家"]);
+
+assert.equal(compareLeximinVectors([20, 100], [20, 90]) > 0, true);
+assert.equal(compareLeximinVectors([20, 100], [21, 50]) < 0, true);
+const fairnessBuckets = new Map([
+  ["left", { fairnessActive: true, members: [{ score: 100 }] }],
+  ["right", { fairnessActive: true, members: [{ score: 20 }] }],
+]);
+const fairnessChoice = chooseLeximinOption([
+  { trial: { key: "left" }, score: 90 },
+  { trial: { key: "right" }, score: 80 },
+], fairnessBuckets, (bucket) => bucket.members.reduce((sum, member) => sum + member.score, 0));
+assert.equal(fairnessChoice.trial.key, "right");
+assert.equal(scaledGroupStrength({ members: [{ score: 100 }, { score: 100 }] }), 200 / 1.02);
+
+const fixedDebuffer = normalizeMember({ name: "Debuffer", role: "debuff", fixedCombat: "swarm" });
+assert.equal(fixedDebuffer.role, "debuff");
+assert.equal(fixedDebuffer.fixedCombat, "swarm");
+const fixedDebufferZh = normalizeMember({ name: "DebufferZh", role: "减益", "固定战斗试炼": "虫群" });
+assert.equal(fixedDebufferZh.role, "debuff");
+assert.equal(fixedDebufferZh.fixedCombat, "虫群");
+
+const testTrials = [
+  { key: "badger", zh: "獾", capacity: 2 },
+  { key: "swarm", zh: "虫群", capacity: 2 },
+];
+const lifeGroups = assignLifeByBestSkill([
+  { name: "LifeA", raw: { badger: 100, swarm: 20 } },
+  { name: "LifeB", raw: { badger: 90, swarm: 80 } },
+], testTrials);
+assert.deepEqual(JSON.parse(JSON.stringify(lifeGroups.map((group) => group.members.map((member) => member.name)))), [["LifeA"], ["LifeB"]]);
+
+const combatGroups = assignCombatByBossProfiles([
+  { name: "Fixed", fixedCombat: "swarm", raw: { badger: 100, swarm: 10 } },
+  { name: "Flexible", fixedCombat: "", raw: { badger: 90, swarm: 80 } },
+], testTrials, {});
+assert.deepEqual(JSON.parse(JSON.stringify(combatGroups.map((group) => group.members.map((member) => member.name)))), [["Flexible"], ["Fixed"]]);
+assert.match(combatGroups[1].members[0].note, /固定位置/);
 
 console.log("simulator import tests passed");
 
