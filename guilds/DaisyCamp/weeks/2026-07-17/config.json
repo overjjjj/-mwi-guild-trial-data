@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "guildId": "DaisyCamp",
+  "weekId": "2026-07-17",
+  "updatedAt": "2026-07-21T06:25:27.733Z",
+  "lifeTrials": [
+    {
+      "key": "foraging",
+      "zh": "采摘",
+      "capacity": 20,
+      "signed": 20
+    },
+    {
+      "key": "woodcutting",
+      "zh": "伐木",
+      "capacity": 20,
+      "signed": 20
+    },
+    {
+      "key": "cheesesmithing",
+      "zh": "炼金",
+      "capacity": 20,
+      "signed": 18
+    },
+    {
+      "key": "enhancing",
+      "zh": "强化",
+      "capacity": 20,
+      "signed": 4
+    }
+  ],
+  "combatTrials": [
+    {
+      "key": "badger",
+      "zh": "獾",
+      "capacity": 40,
+      "signed": 14
+    },
+    {
+      "key": "swarm",
+      "zh": "虫群",
+      "capacity": 40,
+      "signed": 40
+    }
+  ],
+  "memberNames": [
+    "MuMuMilk",
+    "LSPCCY",
+    "WuxinKS",
+    "Zz233",
+    "QQOOO",
+    "regan123",
+    "slime121222",
+    "WhileTrueDo",
+    "nwyisdsb",
+    "MengHan",
+    "QinMengHan",
+    "A777777777777777",
+    "yichenyike520",
+    "wataa",
+    "Jrx8",
+    "monikakakak",
+    "tieniu20000",
+    "AveryCChen",
+    "binsida",
+    "stevenpun",
+    "643087212",
+    "yidaqunsaman",
+    "milerL",
+    "EternityMax",
+    "ZXlj",
+    "Gaaary",
+    "sayilk",
+    "jemy",
+    "XXXXUUUUU",
+    "insomniaa",
+    "nymphetamines",
+    "Aladeen",
+    "zc0804",
+    "netorare",
+    "NeKoPro",
+    "JasonZO",
+    "YAHOooP",
+    "pixivOvO",
+    "MML",
+    "cally111",
+    "neo630035",
+    "JohnSmile",
+    "bepoor",
+    "rirrr",
+    "WhoIsYourBaBa",
+    "XZ66",
+    "HAPPY9898",
+    "Adaaa",
+    "orzorzorzorz",
+    "wantwant",
+    "wantqooo",
+    "wantqooooo",
+    "paopaotongtong",
+    "oiiai0009",
+    "Aqqqqqua",
+    "cmq",
+    "Meaning",
+    "SmallRed",
+    "samabiqi",
+    "EdwardKochagin",
+    "moonshin",
+    "tticIII",
+    "fghqqq",
+    "kalaqi",
+    "kmdj",
+    "Situationship",
+    "LuckyRice",
+    "reallyenyull",
+    "210726"
+  ],
+  "bossProfiles": {
+    "badger": {
+      "label": "magic-single-low-evasion",
+      "weights": {
+        "magic": 1.7,
+        "single": 1.25,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.55,
+        "support": 0.3,
+        "physical": 0.2
+      },
+      "tags": [
+        "single",
+        "magic",
+        "low-magic-evasion"
+      ]
+    },
+    "chameleon": {
+      "label": "physical-single",
+      "weights": {
+        "physical": 1.35,
+        "single": 1,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.4,
+        "support": 0.3
+      },
+      "tags": [
+        "single",
+        "physical"
+      ]
+    },
+    "jellyfish": {
+      "label": "magic-sustain",
+      "weights": {
+        "magic": 1,
+        "single": 0.75,
+        "healer": 0.9,
+        "sustain": 0.9,
+        "support": 0.7,
+        "tank": 0.45
+      },
+      "tags": [
+        "magic",
+        "sustain",
+        "support"
+      ]
+    },
+    "hedgehog": {
+      "label": "magic-single",
+      "weights": {
+        "magic": 1.35,
+        "single": 1,
+        "healer": 0.75,
+        "sustain": 0.65,
+        "tank": 0.45,
+        "support": 0.4
+      },
+      "tags": [
+        "single",
+        "magic"
+      ]
+    },
+    "swarm": {
+      "label": "aoe-mixed-four-targets",
+      "weights": {
+        "aoe": 1.8,
+        "magic": 1,
+        "blunt": 0.85,
+        "ranged": 0.75,
+        "stab": 0.7,
+        "slash": 0.7,
+        "physical": 0.55,
+        "healer": 0.85,
+        "tank": 0.8,
+        "support": 0.8,
+        "sustain": 0.75
+      },
+      "tags": [
+        "aoe",
+        "mixed-damage",
+        "four-targets",
+        "sustain",
+        "support"
+      ]
+    }
+  }
+}
