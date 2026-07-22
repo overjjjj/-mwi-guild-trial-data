@@ -35,6 +35,37 @@ export async function deriveMemberId(name) {
   return `m-${Array.from(digest.slice(0, 10), (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
 }
 
+export async function issueGuildCredential(masterSecret, guildId, nonce) {
+  const secret = String(masterSecret || "").trim();
+  if (!secret) throw new Error("Missing leader credential secret");
+  const id = sanitizeId(guildId, "guildId");
+  const tokenNonce = String(nonce || "").trim();
+  if (!/^[A-Za-z0-9_-]{16,64}$/.test(tokenNonce)) throw new Error("Invalid credential nonce");
+  const payload = `g1.${id}.${tokenNonce}`;
+  const key = await globalThis.crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = new Uint8Array(await globalThis.crypto.subtle.sign("HMAC", key, encoder.encode(payload)));
+  return `${payload}.${base64UrlEncode(signature)}`;
+}
+
+export async function verifyGuildCredential(masterSecret, token, guildId) {
+  const parts = String(token || "").trim().split(".");
+  if (parts.length !== 4 || parts[0] !== "g1") return false;
+  let id;
+  try { id = sanitizeId(guildId, "guildId"); }
+  catch (_) { return false; }
+  if (parts[1] !== id || !/^[A-Za-z0-9_-]{16,64}$/.test(parts[2])) return false;
+  let expected;
+  try { expected = await issueGuildCredential(masterSecret, id, parts[2]); }
+  catch (_) { return false; }
+  return constantTimeEqual(expected, String(token || "").trim());
+}
+
 export function normalizeMemberProfile(input, identity, updatedAt = new Date().toISOString()) {
   const values = {};
   Object.entries(input?.values || {}).forEach(([key, value]) => {
@@ -120,4 +151,19 @@ function finiteNumber(value, min, max) {
   const number = Number(value);
   if (!Number.isFinite(number)) return 0;
   return Math.min(max, Math.max(min, number));
+}
+
+function base64UrlEncode(bytes) {
+  let binary = "";
+  bytes.forEach((byte) => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function constantTimeEqual(left, right) {
+  const a = encoder.encode(String(left));
+  const b = encoder.encode(String(right));
+  let difference = a.length ^ b.length;
+  const length = Math.max(a.length, b.length);
+  for (let index = 0; index < length; index += 1) difference |= (a[index % a.length] || 0) ^ (b[index % b.length] || 0);
+  return difference === 0;
 }

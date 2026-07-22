@@ -90,4 +90,62 @@ if (fs.existsSync(appPath)) {
     assert.equal(JSON.stringify(status).includes("Bob"), false);
     assert.equal(status.config.combatTrials[0].key, "swarm");
   });
+
+  test("public guild creation issues an isolated leader credential without writing storage", async () => {
+    const repository = new FakeRepository();
+    const app = createWorkerApp({ LEADER_TOKEN: "master-secret" }, { repository, now: () => Date.parse("2026-07-20T00:00:00Z") });
+
+    const createResponse = await app.fetch(new Request("https://worker.test/v1/guilds", { method: "POST" }));
+    assert.equal(createResponse.status, 201);
+    const created = await createResponse.json();
+    assert.match(created.guildId, /^g-[a-f0-9]{16}$/);
+    assert.match(created.leaderToken, new RegExp(`^g1\\.${created.guildId}\\.`));
+    assert.equal(repository.files.size, 0, "creating an unused guild should not create GitHub commits");
+
+    const ownConfig = await app.fetch(new Request("https://worker.test/v1/leader/config", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${created.leaderToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ guildId: created.guildId, weekId: "2026-07-17", memberNames: ["Alice"] }),
+    }));
+    assert.equal(ownConfig.status, 200);
+
+    const crossGuild = await app.fetch(new Request("https://worker.test/v1/leader/config", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${created.leaderToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ guildId: "g-other", weekId: "2026-07-17", memberNames: ["Mallory"] }),
+    }));
+    assert.equal(crossGuild.status, 401);
+    assert.equal(await repository.readJson("guilds/g-other/weeks/2026-07-17/config.json"), null);
+  });
+
+  test("legacy leader can claim a guild-specific credential", async () => {
+    const repository = new FakeRepository();
+    const app = createWorkerApp({ LEADER_TOKEN: "master-secret" }, { repository, now: () => Date.parse("2026-07-20T00:00:00Z") });
+
+    const denied = await app.fetch(new Request("https://worker.test/v1/guilds/claim", {
+      method: "POST",
+      headers: { Authorization: "Bearer wrong", "Content-Type": "application/json" },
+      body: JSON.stringify({ guildId: "DaisyCamp" }),
+    }));
+    assert.equal(denied.status, 401);
+
+    const claimResponse = await app.fetch(new Request("https://worker.test/v1/guilds/claim", {
+      method: "POST",
+      headers: { Authorization: "Bearer master-secret", "Content-Type": "application/json" },
+      body: JSON.stringify({ guildId: "DaisyCamp" }),
+    }));
+    assert.equal(claimResponse.status, 200);
+    const claimed = await claimResponse.json();
+    assert.equal(claimed.guildId, "DaisyCamp");
+    assert.equal(await coreCredentialWorks(app, claimed.leaderToken, "DaisyCamp"), true);
+  });
+
+  async function coreCredentialWorks(app, token, guildId) {
+    const response = await app.fetch(new Request("https://worker.test/v1/leader/config", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ guildId, weekId: "2026-07-17", memberNames: ["Alice"] }),
+    }));
+    return response.ok;
+  }
 }

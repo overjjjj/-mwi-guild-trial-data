@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.17.0
+// @version      0.18.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
 // @author       Codex
 // @updateURL    https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-allocator.user.js
@@ -20,6 +20,7 @@
 
   const STORAGE_KEY = "mwi-guild-trial-allocator:v1";
   const GUILD_LEVEL_CACHE_KEY = "mwi-guild-trial-allocator:guild-levels:v1";
+  const DEFAULT_REMOTE_ENDPOINT = "https://mwi-guild-trial-data.vercel.app";
   const BOSS_PROFILE_VERSION = 2;
   const MEMBER_DATA_VERSION = 2;
 
@@ -92,9 +93,10 @@
     replanAll: true,
     excludeAlreadySigned: false,
     compact: false,
-    remoteEndpoint: "",
+    remoteEndpoint: DEFAULT_REMOTE_ENDPOINT,
     remoteGuildId: "",
     remoteLeaderToken: "",
+    remoteMode: "online",
     issuesOnly: true,
     lastSyncedWeekId: "",
     lastPulledWeekId: "",
@@ -327,6 +329,9 @@
     .mwi-gta-member-tools { display: flex; gap: 8px; align-items: end; margin-bottom: 10px; }
     .mwi-gta-member-tools .mwi-gta-field { flex: 1; }
     .mwi-gta-readiness { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    .mwi-gta-setup { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(141, 166, 255, .2); }
+    .mwi-gta-setup-title { margin: 0 0 4px; color: #f2f5ff; font-size: 14px; }
+    .mwi-gta-code { color: #bfffe8; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
     .mwi-gta-ready-item {
       min-height: 28px;
       border: 1px solid rgba(141, 166, 255, .28);
@@ -463,7 +468,7 @@
     <div class="mwi-gta-tabs">
       <button class="mwi-gta-tab active" data-tab="plan">分配</button>
       <button class="mwi-gta-tab" data-tab="members">成员</button>
-      <button class="mwi-gta-tab" data-tab="settings">连接</button>
+      <button class="mwi-gta-tab" data-tab="settings">设置</button>
       <button class="mwi-gta-tab" data-tab="advanced">高级维护</button>
       <button class="mwi-gta-tab" data-tab="help">说明</button>
     </div>
@@ -486,6 +491,18 @@
         <div id="mwi-gta-member-editor" class="mwi-gta-member-list"></div>
       </div>
       <div class="mwi-gta-view" data-view="settings">
+        <section id="mwi-gta-guild-setup" class="mwi-gta-setup">
+          <h3 class="mwi-gta-setup-title">公会连接</h3>
+          <p class="mwi-gta-note" id="mwi-gta-guild-setup-status">尚未设置。</p>
+          <div class="mwi-gta-actions">
+            <button class="mwi-gta-btn primary" data-action="create-guild">创建在线公会</button>
+            <button class="mwi-gta-btn" data-action="claim-guild">升级旧公会</button>
+            <button class="mwi-gta-btn" data-action="local-mode">仅在本机使用</button>
+            <button class="mwi-gta-btn primary" data-action="online-mode">恢复在线公会</button>
+            <button class="mwi-gta-btn" data-action="copy-guild">复制公会编号</button>
+            <button class="mwi-gta-btn" data-action="copy-connection">复制管理备份</button>
+          </div>
+        </section>
         <div class="mwi-gta-grid">
           <label class="mwi-gta-field">生活试炼默认名额
             <input id="mwi-gta-life-cap" type="number" min="1" max="200">
@@ -502,21 +519,24 @@
           <input id="mwi-gta-exclude-signed" type="checkbox">
           读取到“未参加/未报名”名单时，只给未报名成员分配
         </label>
-        <div class="mwi-gta-grid">
-          <label class="mwi-gta-field">服务地址
-            <input id="mwi-gta-remote-endpoint" type="url" placeholder="https://your-project.vercel.app">
+        <details class="mwi-gta-advanced">
+          <summary>高级连接设置</summary>
+          <div class="mwi-gta-grid">
+            <label class="mwi-gta-field">服务地址
+              <input id="mwi-gta-remote-endpoint" type="url" placeholder="https://your-project.vercel.app">
+            </label>
+            <label class="mwi-gta-field">公会编号
+              <input id="mwi-gta-remote-guild" type="text" placeholder="创建后自动生成">
+            </label>
+          </div>
+          <label class="mwi-gta-field">公会管理密钥
+            <input id="mwi-gta-remote-token" type="password" autocomplete="off" placeholder="创建后自动保存">
           </label>
-          <label class="mwi-gta-field">公会编号
-            <input id="mwi-gta-remote-guild" type="text" placeholder="例如 guild-cn-1">
-          </label>
-        </div>
-        <label class="mwi-gta-field">会长令牌
-          <input id="mwi-gta-remote-token" type="password" autocomplete="off" placeholder="Vercel 环境变量中的 LEADER_TOKEN">
-        </label>
-        <div class="mwi-gta-actions" style="margin:8px 0 12px">
-          <button class="mwi-gta-btn primary" data-action="save">保存连接</button>
-          <button class="mwi-gta-btn" data-action="remote-config">同步本周名单</button>
-        </div>
+          <div class="mwi-gta-actions" style="margin:8px 0 12px">
+            <button class="mwi-gta-btn" data-action="save">保存高级连接</button>
+            <button class="mwi-gta-btn" data-action="remote-config">同步本周名单</button>
+          </div>
+        </details>
       </div>
       <div class="mwi-gta-view" data-view="advanced">
         <p class="mwi-gta-note">普通使用无需修改以下内容。只有手工补数据或调整首领权重时才展开。</p>
@@ -561,6 +581,7 @@
             <tr><th>页面读取</th><td>在“试炼”页读取试炼和名额；在“成员”页读取姓名和报名方向。打开公开成员资料后，可在“概览”或“专业”页点击“读取当前资料”，缓存总等级、战斗等级、战力和10项生活等级。</td></tr>
             <tr><th>技能建议</th><td>优先从会员实际上传的技能中推荐最多三个；没有技能明细时只显示适合该首领的技能类型。</td></tr>
             <tr><th>会员端</th><td>同步名单后，会员填写相同公会编号即可上传。会长发布方案后，会员端会显示试炼方向和技能建议。</td></tr>
+            <tr><th>公会连接</th><td>首次使用直接创建在线公会并把自动生成的编号发给会员；不需要远程汇总时可选择仅在本机使用。管理备份含管理密钥，只能交给可信会长。</td></tr>
             <tr><th>边界</th><td>脚本不直接报名、不调用隐藏接口、不代替会长权限；输出的是推荐表和可复制名单。</td></tr>
           </tbody>
         </table>
@@ -591,6 +612,7 @@
     memberFilterNote: panel.querySelector("#mwi-gta-member-filter-note"),
     readiness: panel.querySelector("#mwi-gta-readiness"),
     smartAction: panel.querySelector("#mwi-gta-smart-action"),
+    guildSetupStatus: panel.querySelector("#mwi-gta-guild-setup-status"),
   };
 
   hydrateSettings();
@@ -652,6 +674,16 @@
     if (!action) return;
     if (action === "close") panel.dataset.open = "0";
     if (action === "smart") await runSmartAction();
+    if (action === "setup") {
+      switchTab("settings");
+      setStatus("请创建在线公会，或选择仅在本机使用。");
+    }
+    if (action === "create-guild") await createRemoteGuild();
+    if (action === "claim-guild") await claimRemoteGuild();
+    if (action === "local-mode") setLocalMode();
+    if (action === "online-mode") setOnlineMode();
+    if (action === "copy-guild") copyGuildId();
+    if (action === "copy-connection") copyConnectionBackup();
     if (action === "scan") {
       renderTrialSummary(readCurrentTrials(), true);
       renderReadiness();
@@ -702,6 +734,7 @@
     el.remoteGuild.value = state.remoteGuildId || "";
     el.remoteToken.value = state.remoteLeaderToken || "";
     el.issuesOnly.checked = state.issuesOnly !== false;
+    renderConnectionSetup();
     renderMemberEditor();
   }
 
@@ -716,6 +749,7 @@
     state.remoteEndpoint = el.remoteEndpoint.value.trim();
     state.remoteGuildId = el.remoteGuild.value.trim();
     state.remoteLeaderToken = el.remoteToken.value.trim();
+    if (state.remoteGuildId && state.remoteLeaderToken) state.remoteMode = "online";
     state.issuesOnly = el.issuesOnly.checked;
     if (previousConnection !== `${state.remoteEndpoint}|${state.remoteGuildId}`) {
       state.lastSyncedWeekId = "";
@@ -726,7 +760,137 @@
     el.excludeSigned.disabled = !!state.replanAll;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setStatus("设置已保存。");
+    renderConnectionSetup();
     renderReadiness();
+  }
+
+  function resolveConnectionState(settings) {
+    const guildId = String(settings?.remoteGuildId || "").trim();
+    const token = String(settings?.remoteLeaderToken || "").trim();
+    if (settings?.remoteMode === "local") return guildId && token ? { mode: "local", canRestore: true, guildId } : { mode: "local" };
+    if (!guildId || !token) return { mode: "setup" };
+    if (token.startsWith(`g1.${guildId}.`)) return { mode: "connected", guildId };
+    if (token.startsWith("g1.")) return { mode: "invalid", guildId };
+    return { mode: "legacy", guildId };
+  }
+
+  function renderConnectionSetup() {
+    const connection = resolveConnectionState(state);
+    const setVisible = (action, visible) => {
+      const button = panel.querySelector(`[data-action="${action}"]`);
+      if (button) button.hidden = !visible;
+    };
+    if (connection.mode === "connected") {
+      el.guildSetupStatus.innerHTML = `已连接在线公会：<span class="mwi-gta-code">${escapeHtml(connection.guildId)}</span>。把公会编号发给会员即可。`;
+    } else if (connection.mode === "legacy") {
+      el.guildSetupStatus.innerHTML = `检测到旧公会 <span class="mwi-gta-code">${escapeHtml(connection.guildId)}</span>，请升级为独立管理密钥。`;
+    } else if (connection.mode === "local") {
+      el.guildSetupStatus.textContent = "当前仅在本机计算，不同步会员上传，也不发布远程方案。";
+    } else if (connection.mode === "invalid") {
+      el.guildSetupStatus.textContent = "公会编号与管理密钥不匹配，请从管理备份恢复或创建新公会。";
+    } else {
+      el.guildSetupStatus.textContent = "首次使用可直接创建在线公会；不需要会员上传时也可仅在本机使用。";
+    }
+    setVisible("create-guild", ["setup", "local", "invalid"].includes(connection.mode));
+    setVisible("claim-guild", connection.mode === "legacy");
+    setVisible("local-mode", connection.mode !== "local");
+    setVisible("online-mode", connection.mode === "local" && connection.canRestore);
+    if (connection.mode === "local" && connection.canRestore) setVisible("create-guild", false);
+    setVisible("copy-guild", connection.mode === "connected");
+    setVisible("copy-connection", connection.mode === "connected");
+  }
+
+  async function createRemoteGuild() {
+    try {
+      el.guildSetupStatus.textContent = "正在创建在线公会...";
+      const result = await remoteSetupApi("/v1/guilds", null, "");
+      applyGuildCredential(result);
+      setStatus(`在线公会 ${result.guildId} 已创建。请复制公会编号发给会员。`);
+    } catch (error) {
+      el.guildSetupStatus.textContent = `创建失败：${error.message}`;
+      setStatus(`创建在线公会失败：${error.message}`);
+    }
+  }
+
+  async function claimRemoteGuild() {
+    try {
+      const guildId = el.remoteGuild.value.trim();
+      const legacyToken = el.remoteToken.value.trim();
+      if (!guildId || !legacyToken) throw new Error("旧公会编号或旧会长令牌为空。");
+      el.guildSetupStatus.textContent = "正在升级旧公会...";
+      const result = await remoteSetupApi("/v1/guilds/claim", { guildId }, legacyToken);
+      applyGuildCredential(result);
+      setStatus(`旧公会 ${result.guildId} 已升级为独立管理密钥。`);
+    } catch (error) {
+      el.guildSetupStatus.textContent = `升级失败：${error.message}`;
+      setStatus(`升级旧公会失败：${error.message}`);
+    }
+  }
+
+  function applyGuildCredential(result) {
+    const guildId = String(result?.guildId || "").trim();
+    const leaderToken = String(result?.leaderToken || "").trim();
+    if (!guildId || !leaderToken.startsWith(`g1.${guildId}.`)) throw new Error("服务器返回的公会凭据无效。");
+    state.remoteEndpoint = el.remoteEndpoint.value.trim() || DEFAULT_REMOTE_ENDPOINT;
+    state.remoteGuildId = guildId;
+    state.remoteLeaderToken = leaderToken;
+    state.remoteMode = "online";
+    state.lastSyncedWeekId = "";
+    state.lastPulledWeekId = "";
+    state.lastPublishedWeekId = "";
+    state.lastUploadedNames = [];
+    el.remoteEndpoint.value = state.remoteEndpoint;
+    el.remoteGuild.value = guildId;
+    el.remoteToken.value = leaderToken;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderConnectionSetup();
+    renderReadiness();
+  }
+
+  function setLocalMode() {
+    state.remoteMode = "local";
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderConnectionSetup();
+    renderReadiness();
+    setStatus("已切换为仅在本机使用。仍可正常读取数据并生成本地方案。");
+  }
+
+  function setOnlineMode() {
+    if (!state.remoteGuildId || !state.remoteLeaderToken) {
+      setStatus("没有可恢复的在线公会，请创建在线公会。");
+      return;
+    }
+    state.remoteMode = "online";
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderConnectionSetup();
+    renderReadiness();
+    setStatus("已恢复在线公会连接。");
+  }
+
+  function copyGuildId() {
+    copyText(state.remoteGuildId, "公会编号已复制，请发给会员填写。");
+  }
+
+  function copyConnectionBackup() {
+    const connection = resolveConnectionState(state);
+    if (connection.mode !== "connected") {
+      setStatus("当前没有可备份的在线公会连接。");
+      return;
+    }
+    copyText(JSON.stringify({ endpoint: state.remoteEndpoint, guildId: state.remoteGuildId, leaderToken: state.remoteLeaderToken }, null, 2), "管理备份已复制，其中包含管理密钥，请只交给可信会长。");
+  }
+
+  async function remoteSetupApi(path, body, token) {
+    const endpoint = (el.remoteEndpoint.value.trim() || DEFAULT_REMOTE_ENDPOINT).replace(/\/+$/, "");
+    if (!/^https:\/\//i.test(endpoint)) throw new Error("服务地址必须使用 HTTPS。");
+    const response = await fetch(`${endpoint}${path}`, {
+      method: "POST",
+      headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+    return data;
   }
 
   function readCurrentTrials() {
@@ -740,6 +904,7 @@
   function resolveSmartAction(summary, workflow, remoteConfigured, hasPlan) {
     if (!summary?.trialsComplete) return { action: "scan", label: "读取试炼" };
     if (!summary?.memberCount) return { action: "members", label: "读取成员" };
+    if (summary?.connectionRequired) return { action: "setup", label: "设置公会连接" };
     if (!remoteConfigured) return { action: "plan", label: hasPlan ? "重新生成" : "生成分配" };
     const weekId = workflow?.currentWeekId || "";
     if (workflow?.syncedWeekId !== weekId) return { action: "remote-config", label: "同步本周名单" };
@@ -772,6 +937,7 @@
     const checkUpload = state.lastPulledWeekId === weekId;
     const uploadedNames = Array.isArray(state.lastUploadedNames) ? state.lastUploadedNames : [];
     const cache = readGuildLevelCache();
+    const connection = resolveConnectionState(state);
     const memberIssues = members.map((member) => ({
       member,
       issues: getMemberIssues(member, trials, cache[normalizeText(member.name)]?.simulatorProfile || null, uploadedNames, checkUpload),
@@ -785,6 +951,8 @@
       uploadedComplete: members.filter((member) => uploadedNames.some((name) => normalizeText(name) === normalizeText(member.name))).length,
       checkUpload,
       attentionCount: memberIssues.filter((item) => item.issues.length).length,
+      connection,
+      connectionRequired: ["setup", "legacy", "invalid"].includes(connection.mode),
     };
   }
 
@@ -795,6 +963,7 @@
     el.readiness.innerHTML = [
       item("试炼", `${totalTrials}/6`, !summary.trialsComplete, 'data-action="scan"'),
       item("成员", summary.memberCount, !summary.memberCount, 'data-action="members"'),
+      item("运行", summary.connection.mode === "connected" ? "在线" : summary.connection.mode === "local" ? "本地" : "待设置", summary.connectionRequired, 'data-action="setup"'),
       item("职业完整", `${summary.professionComplete}/${summary.memberCount}`, summary.professionComplete < summary.memberCount, 'data-issue="missing-profession"'),
       item("技能完整", `${summary.skillsComplete}/${summary.memberCount}`, summary.skillsComplete < summary.memberCount, 'data-issue="missing-skills"'),
       ...(summary.checkUpload ? [item("已上传", `${summary.uploadedComplete}/${summary.memberCount}`, summary.uploadedComplete < summary.memberCount, 'data-issue="not-uploaded"')] : []),
@@ -805,7 +974,7 @@
       syncedWeekId: state.lastSyncedWeekId,
       pulledWeekId: state.lastPulledWeekId,
       publishedWeekId: state.lastPublishedWeekId,
-    }, !!(state.remoteEndpoint && state.remoteGuildId && state.remoteLeaderToken), !!latestPlan);
+    }, summary.connection.mode === "connected", !!latestPlan);
     el.smartAction.textContent = smart.label;
     el.smartAction.dataset.nextAction = smart.action;
   }
@@ -816,6 +985,7 @@
     try {
       if (action === "scan") renderTrialSummary(readCurrentTrials(), true);
       if (action === "members") importMembersFromPage();
+      if (action === "setup") switchTab("settings");
       if (action === "remote-config") await syncRemoteConfig();
       if (action === "remote-pull") await pullRemoteMembers();
       if (action === "plan") buildAndRenderPlan();
@@ -923,6 +1093,8 @@
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
       const merged = { ...DEFAULT_STATE, ...saved };
+      if (!String(merged.remoteEndpoint || "").trim()) merged.remoteEndpoint = DEFAULT_REMOTE_ENDPOINT;
+      if (!["online", "local"].includes(merged.remoteMode)) merged.remoteMode = "online";
       if (Number(saved.memberDataVersion || 0) < MEMBER_DATA_VERSION && saved.membersCsv === EXAMPLE_CSV) {
         merged.membersCsv = EMPTY_CSV;
         merged.memberDataVersion = MEMBER_DATA_VERSION;

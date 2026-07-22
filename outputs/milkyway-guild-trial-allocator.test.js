@@ -15,6 +15,9 @@ assert.match(source, /@updateURL\s+https:\/\/raw\.githubusercontent\.com\/overjj
 assert.match(source, /id="mwi-gta-smart-action"/);
 assert.match(source, /id="mwi-gta-readiness"/);
 assert.match(source, /id="mwi-gta-issues-only"/);
+assert.match(source, /const DEFAULT_REMOTE_ENDPOINT = "https:\/\/mwi-guild-trial-data\.vercel\.app"/);
+assert.match(source, /id="mwi-gta-guild-setup"/);
+for (const action of ["create-guild", "claim-guild", "local-mode", "online-mode", "copy-guild"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 
 function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;
@@ -71,6 +74,7 @@ const updateCsvMemberSettings = loadFunction("updateCsvMemberSettings", { parseC
 const formatAbilityName = loadFunction("formatAbilityName");
 const recommendCombatSkills = loadFunction("recommendCombatSkills", { formatAbilityName, normalizeText, memberWeaponType, abilityMatchesWeapon, isHealingAbility });
 const resolveSmartAction = loadFunction("resolveSmartAction");
+const resolveConnectionState = loadFunction("resolveConnectionState");
 const getMemberIssues = loadFunction("getMemberIssues", { memberWeaponType, normalizeText, numberValue });
 const hasTestCapacity = (bucket) => bucket && bucket.members.length < bucket.trial.capacity;
 const assignLifeByBestSkill = loadFunction("assignLifeByBestSkill", {
@@ -307,6 +311,13 @@ assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, { ...
 assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, { ...smartBase, syncedWeekId: "2026-07-17", pulledWeekId: "2026-07-17" }, true, false).action, "plan");
 assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, { ...smartBase, syncedWeekId: "2026-07-17", pulledWeekId: "2026-07-17" }, true, true).action, "remote-publish");
 assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, smartBase, false, true).label, "重新生成");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10, connectionRequired: true }, smartBase, false, false).action, "setup");
+
+assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "online", remoteGuildId: "", remoteLeaderToken: "" }))), { mode: "setup" });
+assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "local", remoteGuildId: "", remoteLeaderToken: "" }))), { mode: "local" });
+assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "local", remoteGuildId: "g-abc", remoteLeaderToken: "g1.g-abc.nonce.signature" }))), { mode: "local", canRestore: true, guildId: "g-abc" });
+assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "online", remoteGuildId: "g-abc", remoteLeaderToken: "g1.g-abc.nonce.signature" }))), { mode: "connected", guildId: "g-abc" });
+assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "online", remoteGuildId: "DaisyCamp", remoteLeaderToken: "legacy-secret" }))), { mode: "legacy", guildId: "DaisyCamp" });
 
 const issueTrials = { combat: [{ key: "swarm", zh: "虫群" }] };
 const incompleteIssues = getMemberIssues(normalizeMember({ name: "Missing" }), issueTrials, null, [], false);

@@ -13,6 +13,7 @@ assert.equal(source.includes("mwi-gtm-token"), false, "member token field should
 for (const action of ["read", "upload", "refresh"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 assert.match(source, /技能建议/);
 assert.match(source, /@updateURL\s+https:\/\/raw\.githubusercontent\.com\/overjjjj\/-mwi-guild-trial-data\/main\/outputs\/milkyway-guild-trial-member\.user\.js/);
+assert.match(source, /const DEFAULT_REMOTE_ENDPOINT = "https:\/\/mwi-guild-trial-data\.vercel\.app"/);
 
 function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;

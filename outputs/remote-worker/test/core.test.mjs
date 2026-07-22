@@ -27,6 +27,14 @@ if (fs.existsSync(corePath)) {
     assert.match(first, /^m-[a-f0-9]{20}$/);
   });
 
+  test("guild credentials are signed and bound to one guild", async () => {
+    const token = await core.issueGuildCredential("master-secret", "g-alpha", "fixednonce123456");
+    assert.match(token, /^g1\.g-alpha\.fixednonce123456\.[A-Za-z0-9_-]+$/);
+    assert.equal(await core.verifyGuildCredential("master-secret", token, "g-alpha"), true);
+    assert.equal(await core.verifyGuildCredential("master-secret", token, "g-beta"), false);
+    assert.equal(await core.verifyGuildCredential("wrong-secret", token, "g-alpha"), false);
+  });
+
   test("member uploads are minimized and bound to the canonical roster identity", () => {
     const normalized = core.normalizeMemberProfile({
       name: "ForgedName",

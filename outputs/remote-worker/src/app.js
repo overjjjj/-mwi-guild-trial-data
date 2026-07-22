@@ -1,9 +1,11 @@
 import {
   deriveMemberId,
   getWeekId,
+  issueGuildCredential,
   normalizeMemberProfile,
   sanitizeId,
   selectMemberAssignment,
+  verifyGuildCredential,
 } from "./core.js";
 import { GitHubRepository } from "./github.js";
 
@@ -18,6 +20,18 @@ export function createWorkerApp(env, options = {}) {
         const url = new URL(request.url);
         if (url.pathname === "/v1/health" && request.method === "GET") {
           return respond(request, env, { ok: true, weekId: getWeekId(new Date(now())) });
+        }
+        if (url.pathname === "/v1/guilds" && request.method === "POST") {
+          const guildId = `g-${randomHex(8)}`;
+          const leaderToken = await issueGuildCredential(required(env.LEADER_TOKEN, "LEADER_TOKEN"), guildId, randomHex(16));
+          return respond(request, env, { ok: true, guildId, leaderToken }, 201);
+        }
+        if (url.pathname === "/v1/guilds/claim" && request.method === "POST") {
+          requireLegacyLeader(request, env);
+          const body = await readJson(request);
+          const guildId = sanitizeId(body.guildId, "guildId");
+          const leaderToken = await issueGuildCredential(required(env.LEADER_TOKEN, "LEADER_TOKEN"), guildId, randomHex(16));
+          return respond(request, env, { ok: true, guildId, leaderToken });
         }
         if (url.pathname === "/v1/member/profile" && request.method === "POST") {
           const body = await readJson(request);
@@ -49,8 +63,8 @@ export function createWorkerApp(env, options = {}) {
           });
         }
         if (url.pathname === "/v1/leader/submissions" && request.method === "GET") {
-          requireLeader(request, env);
           const guildId = sanitizeId(url.searchParams.get("guildId"), "guildId");
+          await requireGuildLeader(request, env, guildId);
           const weekId = validateWeekId(url.searchParams.get("weekId") || getWeekId(new Date(now())));
           const directory = `${weekRoot(guildId, weekId)}/members`;
           const files = (await repository.list(directory)).filter((item) => item.type === "file" && item.path.endsWith(".json"));
@@ -59,16 +73,16 @@ export function createWorkerApp(env, options = {}) {
           return respond(request, env, { guildId, weekId, members });
         }
         if (url.pathname === "/v1/leader/config" && request.method === "PUT") {
-          requireLeader(request, env);
           const body = await readJson(request);
           const config = normalizeConfig(body, now());
+          await requireGuildLeader(request, env, config.guildId);
           await repository.writeJson(`${weekRoot(config.guildId, config.weekId)}/config.json`, config);
           return respond(request, env, { ok: true, guildId: config.guildId, weekId: config.weekId });
         }
         if (url.pathname === "/v1/leader/assignment" && request.method === "PUT") {
-          requireLeader(request, env);
           const body = await readJson(request);
           const guildId = sanitizeId(body.guildId, "guildId");
+          await requireGuildLeader(request, env, guildId);
           const weekId = validateWeekId(body.weekId);
           const members = normalizeAssignments(body.members);
           const assignment = {
@@ -161,9 +175,17 @@ function normalizeName(value) {
   return String(value || "").toLowerCase().replace(/\s+/g, "");
 }
 
-function requireLeader(request, env) {
+async function requireGuildLeader(request, env, guildId) {
   const token = readBearer(request);
-  if (!token || token !== required(env.LEADER_TOKEN, "LEADER_TOKEN")) throw httpError(401, "Leader authorization failed");
+  const masterSecret = required(env.LEADER_TOKEN, "LEADER_TOKEN");
+  if (!token || (token !== masterSecret && !(await verifyGuildCredential(masterSecret, token, guildId)))) {
+    throw httpError(401, "Leader authorization failed");
+  }
+}
+
+function requireLegacyLeader(request, env) {
+  const token = readBearer(request);
+  if (!token || token !== required(env.LEADER_TOKEN, "LEADER_TOKEN")) throw httpError(401, "Legacy leader authorization failed");
 }
 
 function readBearer(request) {
@@ -223,4 +245,10 @@ function httpError(status, message) {
   const error = new Error(message);
   error.status = status;
   return error;
+}
+
+function randomHex(byteLength) {
+  const bytes = new Uint8Array(byteLength);
+  globalThis.crypto.getRandomValues(bytes);
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }

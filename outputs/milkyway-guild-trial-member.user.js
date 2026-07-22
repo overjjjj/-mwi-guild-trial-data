@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼会员端
 // @namespace    https://www.milkywayidle.com/
-// @version      0.6.0
+// @version      0.7.0
 // @description  按公会名单和角色名上传本角色的公会试炼资料，并显示个人适配和正式分配。
 // @author       Codex
 // @updateURL    https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-member.user.js
@@ -18,6 +18,7 @@
   "use strict";
 
   const STORAGE_KEY = "mwi-guild-trial-member:v1";
+  const DEFAULT_REMOTE_ENDPOINT = "https://mwi-guild-trial-data.vercel.app";
   let capturedCharacterData = null;
   let currentProfile = null;
   let currentStatus = null;
@@ -104,7 +105,7 @@
       recommendations: panel.querySelector("#mwi-gtm-recommendations"), assignment: panel.querySelector("#mwi-gtm-assignment"),
     };
     const saved = loadSettings();
-    el.endpoint.value = saved.endpoint || "";
+    el.endpoint.value = saved.endpoint || DEFAULT_REMOTE_ENDPOINT;
     el.guild.value = saved.guildId || "";
     currentProfile = saved.lastProfile || null;
     if (currentProfile) renderProfile(el, currentProfile);
