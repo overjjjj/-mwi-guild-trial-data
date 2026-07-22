@@ -3,9 +3,9 @@
   "guildId": "DaisyCamp",
   "memberId": "m-3e74f304124d2f633bbb",
   "name": "zc0804",
-  "updatedAt": "2026-07-22T06:20:23.820Z",
+  "updatedAt": "2026-07-22T06:20:25.672Z",
   "values": {
-    "level": 3056,
+    "level": 3064,
     "combatLevel": 136,
     "combat": 136,
     "attackLevel": 130,
@@ -26,6 +26,7 @@
     "aoe": 70,
     "single": 73,
     "healer": 62,
+    "role": "healer",
     "support": 70,
     "magic": 142
   },
@@ -37,11 +38,31 @@
     "crafting": 103,
     "tailoring": 95,
     "cooking": 72,
-    "brewing": 72,
+    "brewing": 76,
     "alchemy": 65,
     "enhancing": 65
   },
   "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/enchanted_gloves",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blooming_trident_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
     {
       "itemLocationHrid": "/item_locations/legs",
       "itemHrid": "/items/royal_nature_robe_bottoms_refined",
@@ -79,8 +100,8 @@
     },
     {
       "itemLocationHrid": "/item_locations/charm",
-      "itemHrid": "/items/advanced_foraging_charm",
-      "enhancementLevel": 0
+      "itemHrid": "/items/expert_defense_charm",
+      "enhancementLevel": 3
     },
     {
       "itemLocationHrid": "/item_locations/head",
@@ -90,26 +111,6 @@
     {
       "itemLocationHrid": "/item_locations/feet",
       "itemHrid": "/items/collectors_boots",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/trinket",
-      "itemHrid": "/items/expert_task_badge",
-      "enhancementLevel": 1
-    },
-    {
-      "itemLocationHrid": "/item_locations/hands",
-      "itemHrid": "/items/enchanted_gloves",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/main_hand",
-      "itemHrid": "/items/blooming_trident_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/ring",
-      "itemHrid": "/items/philosophers_ring",
       "enhancementLevel": 5
     }
   ],
