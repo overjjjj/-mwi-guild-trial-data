@@ -74,7 +74,7 @@ if (fs.existsSync(appPath)) {
         guildId: "guild-1",
         weekId: "2026-07-17",
         members: {
-          [upload.memberId]: { name: "Alice", life: { trialKey: "foraging" } },
+          [upload.memberId]: { name: "Alice", life: { trialKey: "foraging" }, combat: { trialKey: "swarm", skills: ["剧毒花粉 70级", "群体治疗"] } },
           "m-other": { name: "Bob", combat: { trialKey: "swarm" } },
         },
       }),
@@ -86,6 +86,7 @@ if (fs.existsSync(appPath)) {
     assert.equal(statusResponse.headers.get("access-control-allow-origin"), "https://www.milkywayidlecn.com");
     const status = await statusResponse.json();
     assert.equal(status.assignment.name, "Alice");
+    assert.deepEqual(status.assignment.combat.skills, ["剧毒花粉 70级", "群体治疗"]);
     assert.equal(JSON.stringify(status).includes("Bob"), false);
     assert.equal(status.config.combatTrials[0].key, "swarm");
   });

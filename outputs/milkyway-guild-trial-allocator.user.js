@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.14.0
+// @version      0.15.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
@@ -234,7 +234,7 @@
       right: 16px;
       top: 84px;
       z-index: 2147483647;
-      width: min(680px, calc(100vw - 32px));
+      width: min(920px, calc(100vw - 32px));
       max-height: calc(100vh - 110px);
       display: none;
       grid-template-rows: auto auto 1fr auto;
@@ -306,6 +306,7 @@
       color: #c9d3ff;
     }
     .mwi-gta-field input,
+    .mwi-gta-field select,
     .mwi-gta-field textarea {
       width: 100%;
       border: 1px solid rgba(141, 166, 255, .32);
@@ -316,6 +317,43 @@
       font: inherit;
     }
     .mwi-gta-field textarea { min-height: 220px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .mwi-gta-member-tools { display: flex; gap: 8px; align-items: end; margin-bottom: 10px; }
+    .mwi-gta-member-tools .mwi-gta-field { flex: 1; }
+    .mwi-gta-member-list { display: grid; gap: 6px; }
+    .mwi-gta-member-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 1.25fr) repeat(4, minmax(105px, 1fr));
+      gap: 7px;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid rgba(141, 166, 255, .16);
+      background: #181d2d;
+    }
+    .mwi-gta-member-row select {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid rgba(141, 166, 255, .32);
+      border-radius: 5px;
+      background: #151a29;
+      color: #f3f6ff;
+      padding: 6px;
+      font: inherit;
+    }
+    .mwi-gta-member-name { min-width: 0; font-weight: 700; color: #fff; overflow-wrap: anywhere; }
+    .mwi-gta-member-score { display: block; color: #8fa0cb; font-size: 12px; font-weight: 400; }
+    .mwi-gta-group { margin-top: 10px; border-top: 1px solid rgba(141, 166, 255, .28); }
+    .mwi-gta-group-head { display: flex; justify-content: space-between; gap: 12px; padding: 9px 2px; align-items: baseline; }
+    .mwi-gta-group-title { font-size: 14px; font-weight: 800; color: #f2f5ff; }
+    .mwi-gta-group-stats { color: #aeb9df; text-align: right; }
+    .mwi-gta-assigned-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    .mwi-gta-assigned { padding: 8px; background: #181d2d; border-left: 3px solid #5367dd; min-width: 0; }
+    .mwi-gta-assigned-name { color: #fff; font-weight: 700; overflow-wrap: anywhere; }
+    .mwi-gta-assigned-meta { color: #9fb0dd; font-size: 12px; }
+    .mwi-gta-skills { margin-top: 4px; color: #bfffe8; font-size: 12px; }
+    .mwi-gta-summary { margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(141, 166, 255, .2); }
+    .mwi-gta-summary details { margin: 4px 0; }
+    .mwi-gta-advanced { margin-top: 10px; }
+    .mwi-gta-advanced > summary { cursor: pointer; color: #c9d3ff; padding: 6px 0; }
     .mwi-gta-check {
       display: flex;
       align-items: center;
@@ -366,9 +404,14 @@
       color: #aeb9df;
       background: #1a1f31;
     }
-    @media (max-width: 620px) {
+    @media (max-width: 760px) {
       .mwi-gta-grid { grid-template-columns: 1fr; }
       .mwi-gta-actions { justify-content: flex-end; }
+      .mwi-gta-member-row { grid-template-columns: 1fr 1fr; }
+      .mwi-gta-member-name { grid-column: 1 / -1; }
+      .mwi-gta-assigned-list { grid-template-columns: 1fr; }
+      .mwi-gta-group-head { display: block; }
+      .mwi-gta-group-stats { text-align: left; margin-top: 3px; }
     }
   `;
   document.documentElement.appendChild(style);
@@ -390,24 +433,35 @@
     <div class="mwi-gta-head">
       <div class="mwi-gta-title">公会试炼分配助手</div>
       <div class="mwi-gta-actions">
-        <button class="mwi-gta-btn" data-action="scan">读取页面</button>
-        <button class="mwi-gta-btn" data-action="members">读取成员/等级</button>
-        <button class="mwi-gta-btn" data-action="profile">读取当前资料</button>
+        <button class="mwi-gta-btn" data-action="scan">读取试炼</button>
+        <button class="mwi-gta-btn" data-action="members">读取成员</button>
         <button class="mwi-gta-btn primary" data-action="plan">生成分配</button>
-        <button class="mwi-gta-btn" data-action="copy">复制结果</button>
+        <button class="mwi-gta-btn" data-action="remote-publish">发布方案</button>
         <button class="mwi-gta-btn" data-action="close">关闭</button>
       </div>
     </div>
     <div class="mwi-gta-tabs">
       <button class="mwi-gta-tab active" data-tab="plan">分配</button>
-      <button class="mwi-gta-tab" data-tab="settings">设置</button>
+      <button class="mwi-gta-tab" data-tab="members">成员</button>
+      <button class="mwi-gta-tab" data-tab="settings">连接</button>
+      <button class="mwi-gta-tab" data-tab="advanced">高级维护</button>
       <button class="mwi-gta-tab" data-tab="help">说明</button>
     </div>
     <div class="mwi-gta-body">
       <div class="mwi-gta-view active" data-view="plan">
-        <p class="mwi-gta-note" id="mwi-gta-status">先点“读取页面”或直接“生成分配”。</p>
+        <p class="mwi-gta-note" id="mwi-gta-status">先点“读取试炼”或直接“生成分配”。</p>
         <div id="mwi-gta-trials"></div>
         <div id="mwi-gta-result"></div>
+        <div class="mwi-gta-actions" style="margin-top:10px"><button class="mwi-gta-btn" data-action="copy">复制结果</button></div>
+      </div>
+      <div class="mwi-gta-view" data-view="members">
+        <div class="mwi-gta-member-tools">
+          <label class="mwi-gta-field">查找成员<input id="mwi-gta-member-search" type="search" placeholder="输入角色名"></label>
+          <button class="mwi-gta-btn" data-action="profile">读取已打开的资料</button>
+          <button class="mwi-gta-btn" data-action="remote-pull">拉取会员资料</button>
+        </div>
+        <p class="mwi-gta-note">只需设置特殊成员。固定战斗留空时由系统自动分配。</p>
+        <div id="mwi-gta-member-editor" class="mwi-gta-member-list"></div>
       </div>
       <div class="mwi-gta-view" data-view="settings">
         <div class="mwi-gta-grid">
@@ -427,22 +481,10 @@
           读取到“未参加/未报名”名单时，只给未报名成员分配
         </label>
         <div class="mwi-gta-grid">
-          <label class="mwi-gta-field">角色导出绑定成员名
-            <input id="mwi-gta-simulator-name" type="text" placeholder="导出无 characterName 时必填">
-          </label>
-        </div>
-        <label class="mwi-gta-field">角色战斗导出 JSON
-          <textarea id="mwi-gta-simulator-json" spellcheck="false" placeholder="粘贴模拟器导出 JSON；食物和饮料会被忽略"></textarea>
-        </label>
-        <div class="mwi-gta-actions" style="margin:8px 0 12px">
-          <button class="mwi-gta-btn" data-action="read-simulator">一键读取并导入本角色</button>
-          <button class="mwi-gta-btn" data-action="import-simulator">导入上述 JSON</button>
-        </div>
-        <div class="mwi-gta-grid">
-          <label class="mwi-gta-field">远程服务地址
+          <label class="mwi-gta-field">服务地址
             <input id="mwi-gta-remote-endpoint" type="url" placeholder="https://your-project.vercel.app">
           </label>
-          <label class="mwi-gta-field">公会 ID
+          <label class="mwi-gta-field">公会编号
             <input id="mwi-gta-remote-guild" type="text" placeholder="例如 guild-cn-1">
           </label>
         </div>
@@ -450,40 +492,59 @@
           <input id="mwi-gta-remote-token" type="password" autocomplete="off" placeholder="Vercel 环境变量中的 LEADER_TOKEN">
         </label>
         <div class="mwi-gta-actions" style="margin:8px 0 12px">
-          <button class="mwi-gta-btn" data-action="remote-config">同步试炼和会员名单</button>
-          <button class="mwi-gta-btn" data-action="remote-pull">拉取会员上传</button>
-          <button class="mwi-gta-btn primary" data-action="remote-publish">发布当前方案</button>
+          <button class="mwi-gta-btn primary" data-action="save">保存连接</button>
+          <button class="mwi-gta-btn" data-action="remote-config">同步本周名单</button>
         </div>
-        <label class="mwi-gta-field">成员 CSV
+      </div>
+      <div class="mwi-gta-view" data-view="advanced">
+        <p class="mwi-gta-note">普通使用无需修改以下内容。只有手工补数据或调整首领权重时才展开。</p>
+        <details class="mwi-gta-advanced">
+          <summary>导入角色原始数据</summary>
+          <div class="mwi-gta-grid">
+            <label class="mwi-gta-field">绑定成员名<input id="mwi-gta-simulator-name" type="text" placeholder="数据中没有角色名时填写"></label>
+          </div>
+          <label class="mwi-gta-field">角色原始数据<textarea id="mwi-gta-simulator-json" spellcheck="false" placeholder="粘贴角色导出内容"></textarea></label>
+          <div class="mwi-gta-actions" style="margin:8px 0 12px">
+            <button class="mwi-gta-btn" data-action="read-simulator">自动读取本角色</button>
+            <button class="mwi-gta-btn" data-action="import-simulator">导入粘贴内容</button>
+          </div>
+        </details>
+        <details class="mwi-gta-advanced">
+          <summary>成员原始表格</summary>
+        <label class="mwi-gta-field">
           <textarea id="mwi-gta-csv" spellcheck="false"></textarea>
         </label>
-        <label class="mwi-gta-field">Boss 属性权重 JSON
+        </details>
+        <details class="mwi-gta-advanced">
+          <summary>首领属性权重</summary>
+        <label class="mwi-gta-field">
           <textarea id="mwi-gta-boss-profiles" spellcheck="false"></textarea>
         </label>
+        </details>
         <div class="mwi-gta-actions">
-          <button class="mwi-gta-btn primary" data-action="save">保存设置</button>
-          <button class="mwi-gta-btn" data-action="example">填入示例</button>
-          <button class="mwi-gta-btn warn" data-action="reset">重置</button>
+          <button class="mwi-gta-btn primary" data-action="save">保存高级数据</button>
+          <button class="mwi-gta-btn" data-action="example">填入示例数据</button>
+          <button class="mwi-gta-btn warn" data-action="reset">恢复默认</button>
         </div>
       </div>
       <div class="mwi-gta-view" data-view="help">
-        <p class="mwi-gta-note">CSV 第一行必须是表头。评分应基于试炼所选配装的快照，不计消耗品，并包含当前公会建筑和神龛增益；数值越高越优先。</p>
+        <p class="mwi-gta-note">通常只需要读取数据、设置少量特殊成员，然后生成分配。</p>
         <table class="mwi-gta-table">
           <tbody>
-            <tr><th>字段</th><td>name 必填；自动字段为 level/lifeLevel/combatLevel/currentLife/currentCombat；生活字段支持 milking/foraging/woodcutting/cheesesmithing/crafting/tailoring/cooking/brewing/alchemy/enhancing；战斗字段支持 combat/aoe/single/physical/magic/stab/slash/blunt/ranged/tank/healer/sustain/support/power、role、damageType。减益角色可设 role=debuff，并用 fixedCombat 固定到本周某场战斗试炼。</td></tr>
-            <tr><th>Boss 属性</th><td>支持獾、变色龙、水母、刺猬、虫群五种遭遇。按当周两个 Boss 的属性权重分配，并检查成员边际贡献是否足以抵消每名参与者带来的 1% 怪物 HP 增长。</td></tr>
+            <tr><th>日常操作</th><td>读取试炼、读取成员，在“成员”页给少量特殊角色选择职责或固定位置，然后生成并发布。</td></tr>
+            <tr><th>首领属性</th><td>支持獾、变色龙、水母、刺猬和虫群。系统会按当周两个首领的属性自动匹配成员，并计算每名参与者带来的 1% 敌方生命增长。</td></tr>
             <tr><th>周规则</th><td>每周五 00:00 UTC 重置；每人最多报名 1 场生活和 1 场战斗。试炼与正常行动并行，使用报名配装快照且不使用消耗品，从 Lv.100 起每层 +10，最高 Lv.300。</td></tr>
-            <tr><th>分配</th><td>fixedCombat 是硬约束，会先占位；剩余名额按近似 Leximin 优先提高最弱组的折算强度。生活自动读取值是专业等级，也可手填每小时有效产出，后者更准确。</td></tr>
-            <tr><th>偏好</th><td>preferLife、preferCombat 可填 key 或中文名，会给该成员加分。avoid 可用英文逗号或竖线分隔多个不想去的试炼。</td></tr>
+            <tr><th>固定成员</th><td>在“成员”页选择固定战斗后，该成员会先占对应位置；其他成员再按最弱组优先的方式均衡分配。</td></tr>
+            <tr><th>偏好</th><td>生活和战斗偏好都可直接在“成员”页选择。没有特殊要求时保持“无偏好”即可。</td></tr>
             <tr><th>页面读取</th><td>在“试炼”页读取试炼和名额；在“成员”页读取姓名和报名方向。打开公开成员资料后，可在“概览”或“专业”页点击“读取当前资料”，缓存总等级、战斗等级、战力和10项生活等级。</td></tr>
-            <tr><th>角色导出</th><td>可粘贴模拟器角色 JSON，或读取其他兼容脚本公开的 MWI_INTEGRATED.getSimulatorData()。导入战斗等级、武器类别、非生产装备、能力与战斗房屋摘要；试炼禁用的食物和饮料不会计入。导出没有角色名时必须手工绑定或先打开对应成员资料。</td></tr>
-            <tr><th>会员端</th><td>同步试炼时会把成员 CSV 中的姓名保存为本周公会名单。会员填写相同公会 ID 后，按当前角色名匹配名单并上传。该模式没有会员令牌，无法防止懂接口的人伪造同名请求。</td></tr>
+            <tr><th>技能建议</th><td>优先从会员实际上传的技能中推荐最多三个；没有技能明细时只显示适合该首领的技能类型。</td></tr>
+            <tr><th>会员端</th><td>同步名单后，会员填写相同公会编号即可上传。会长发布方案后，会员端会显示试炼方向和技能建议。</td></tr>
             <tr><th>边界</th><td>脚本不直接报名、不调用隐藏接口、不代替会长权限；输出的是推荐表和可复制名单。</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div class="mwi-gta-foot">本地计算；数据保存在浏览器 localStorage。</div>
+    <div class="mwi-gta-foot">本地计算，修改会自动保存在当前浏览器。</div>
   `;
   document.body.appendChild(panel);
 
@@ -502,6 +563,8 @@
     remoteEndpoint: panel.querySelector("#mwi-gta-remote-endpoint"),
     remoteGuild: panel.querySelector("#mwi-gta-remote-guild"),
     remoteToken: panel.querySelector("#mwi-gta-remote-token"),
+    memberEditor: panel.querySelector("#mwi-gta-member-editor"),
+    memberSearch: panel.querySelector("#mwi-gta-member-search"),
   };
 
   hydrateSettings();
@@ -517,6 +580,24 @@
 
   el.replanAll.addEventListener("change", () => {
     el.excludeSigned.disabled = el.replanAll.checked;
+  });
+
+  el.memberSearch.addEventListener("input", () => {
+    const query = normalizeText(el.memberSearch.value);
+    el.memberEditor.querySelectorAll("[data-member-row]").forEach((row) => {
+      row.hidden = query && !normalizeText(row.dataset.memberRow).includes(query);
+    });
+  });
+
+  panel.addEventListener("change", (event) => {
+    const control = event.target.closest("[data-member-field]");
+    if (!control) return;
+    el.csv.value = updateCsvMemberSettings(el.csv.value, control.dataset.memberName, {
+      [control.dataset.memberField]: control.value,
+    });
+    state.membersCsv = el.csv.value;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setStatus(`已保存 ${control.dataset.memberName} 的成员设置。`);
   });
 
   panel.addEventListener("click", (event) => {
@@ -542,6 +623,7 @@
     if (action === "example") {
       el.csv.value = EXAMPLE_CSV;
       saveSettings();
+      renderMemberEditor();
     }
     if (action === "reset") {
       localStorage.removeItem(STORAGE_KEY);
@@ -558,6 +640,7 @@
     panel.querySelectorAll(".mwi-gta-view").forEach((node) => {
       node.classList.toggle("active", node.dataset.view === name);
     });
+    if (name === "members") renderMemberEditor();
   }
 
   function hydrateSettings() {
@@ -571,6 +654,7 @@
     el.remoteEndpoint.value = state.remoteEndpoint || "";
     el.remoteGuild.value = state.remoteGuildId || "";
     el.remoteToken.value = state.remoteLeaderToken || "";
+    renderMemberEditor();
   }
 
   function saveSettings() {
@@ -586,6 +670,68 @@
     el.excludeSigned.disabled = !!state.replanAll;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setStatus("设置已保存。");
+  }
+
+  function renderMemberEditor() {
+    const members = parseCsv(el.csv.value).map(normalizeMember).filter((member) => member.name);
+    if (!members.length) {
+      el.memberEditor.innerHTML = `<p class="mwi-gta-note">尚无成员，请先在公会成员页面点击“读取成员”。</p>`;
+      return;
+    }
+    const optionHtml = (items, current) => items.map(([value, label]) => (
+      `<option value="${escapeHtml(value)}"${normalizeText(value) === normalizeText(current) ? " selected" : ""}>${escapeHtml(label)}</option>`
+    )).join("");
+    const roleOptions = [["dps", "职责：输出"], ["tank", "职责：坦克"], ["healer", "职责：治疗"], ["debuff", "职责：减益"]];
+    const combatOptions = [["", "固定：自动"], ...COMBAT_TRIALS.map((trial) => [trial.key, `固定：${trial.zh}`])];
+    const lifeOptions = [["", "生活：无偏好"], ...LIFE_TRIALS.map((trial) => [trial.key, `生活：${trial.zh}`])];
+    const preferCombatOptions = [["", "战斗：无偏好"], ...COMBAT_TRIALS.map((trial) => [trial.key, `战斗：${trial.zh}`])];
+    el.memberEditor.innerHTML = members.map((member) => {
+      const lifeScores = LIFE_TRIALS.map((trial) => ({ trial, score: numberValue(member.raw[trial.key]) }))
+        .sort((a, b) => b.score - a.score);
+      const bestLife = lifeScores[0]?.score > 0 ? `${lifeScores[0].trial.zh} ${lifeScores[0].score}` : "生活未读取";
+      const combatScore = numberValue(member.raw.combat) || numberValue(member.raw.combatLevel);
+      const dataName = escapeHtml(member.name);
+      const select = (field, label, options, current) => `
+        <label title="${escapeHtml(label)}"><select data-member-name="${dataName}" data-member-field="${field}" aria-label="${escapeHtml(label)}">
+          ${optionHtml(options, current)}
+        </select></label>`;
+      return `<div class="mwi-gta-member-row" data-member-row="${dataName}">
+        <div class="mwi-gta-member-name">${dataName}<span class="mwi-gta-member-score">${escapeHtml(bestLife)} · 战斗 ${combatScore || "未读取"}</span></div>
+        ${select("role", "职责", roleOptions, member.role)}
+        ${select("fixedCombat", "固定战斗", combatOptions, member.fixedCombat)}
+        ${select("preferLife", "生活偏好", lifeOptions, member.preferLife)}
+        ${select("preferCombat", "战斗偏好", preferCombatOptions, member.preferCombat)}
+      </div>`;
+    }).join("");
+  }
+
+  function updateCsvMemberSettings(text, memberName, updates) {
+    const rows = parseCsvRows(text);
+    const headers = rows.length ? rows[0].map((header) => header.trim()) : ["name"];
+    const dataRows = rows.length ? rows.slice(1) : [];
+    let nameIndex = headers.findIndex((header) => ["name", "player", "玩家"].includes(normalizeText(header)));
+    if (nameIndex < 0) {
+      headers.unshift("name");
+      dataRows.forEach((row) => row.unshift(""));
+      nameIndex = 0;
+    }
+    let row = dataRows.find((item) => normalizeText(item[nameIndex]) === normalizeText(memberName));
+    if (!row) {
+      row = Array(headers.length).fill("");
+      row[nameIndex] = String(memberName || "").trim();
+      dataRows.push(row);
+    }
+    Object.entries(updates || {}).forEach(([key, value]) => {
+      let index = headers.findIndex((header) => normalizeText(header) === normalizeText(key));
+      if (index < 0) {
+        headers.push(key);
+        dataRows.forEach((item) => item.push(""));
+        index = headers.length - 1;
+      }
+      while (row.length < headers.length) row.push("");
+      row[index] = String(value ?? "").trim();
+    });
+    return [headers, ...dataRows].map((item) => item.map(encodeCsvCell).join(",")).join("\n");
   }
 
   function loadState() {
@@ -723,7 +869,8 @@
     const levelCount = records.filter((record) => Object.values(record.values).some((value) => numberValue(value) > 0)).length;
     el.csv.value = mergeMemberRecordsIntoCsv(el.csv.value, records);
     saveSettings();
-    switchTab("settings");
+    renderMemberEditor();
+    switchTab("members");
     setStatus(`已合并 ${names.length} 名成员，其中 ${levelCount} 人读取到游戏已推送的等级；手工评分未覆盖。`);
   }
 
@@ -777,8 +924,9 @@
     };
     el.csv.value = mergeMemberRecordsIntoCsv(el.csv.value, [{ name, values }]);
     saveSettings();
+    renderMemberEditor();
     const captured = [totalLevel ? "概览" : "", Object.keys(profileSkills).length ? "10项专业" : ""].filter(Boolean).join("+");
-    setStatus(`已读取 ${name}：${captured || "公开数值"}，并合并到成员 CSV。`);
+    setStatus(`已读取 ${name}：${captured || "公开数值"}，并更新成员资料。`);
   }
 
   async function readCompatibleSimulatorExport() {
@@ -786,8 +934,8 @@
       const pageWindow = typeof unsafeWindow !== "undefined" ? unsafeWindow : window;
       const getter = pageWindow.MWI_INTEGRATED?.getSimulatorData;
       if (typeof getter !== "function") {
-        setStatus("未找到兼容脚本的角色导出接口，请把角色 JSON 粘贴到设置页后导入。");
-        switchTab("settings");
+        setStatus("未找到自动读取接口，请在高级维护中粘贴角色原始数据。");
+        switchTab("advanced");
         return;
       }
       const data = await Promise.resolve(getter());
@@ -797,7 +945,7 @@
       importSimulatorExport(data);
     } catch (error) {
       setStatus(`读取角色导出失败：${error.message}`);
-      switchTab("settings");
+      switchTab("advanced");
     }
   }
 
@@ -821,11 +969,12 @@
       el.csv.value = mergeMemberRecordsIntoCsv(el.csv.value, [{ name: record.name, values: record.values }]);
       el.simulatorName.value = record.name;
       saveSettings();
-      switchTab("settings");
+      renderMemberEditor();
+      switchTab("members");
       setStatus(`已导入 ${record.name}：战斗等级 ${record.values.combatLevel || 0}，战斗装备 ${record.values.combatEquipmentCount || 0} 件，能力 ${record.values.abilityCount || 0} 个；食物和饮料未计入。`);
     } catch (error) {
-      setStatus(`导入角色 JSON 失败：${error.message}`);
-      switchTab("settings");
+      setStatus(`导入角色数据失败：${error.message}`);
+      switchTab("advanced");
     }
   }
 
@@ -1023,14 +1172,22 @@
           remoteMemberId: member.memberId,
           remoteCapturedAt: member.updatedAt,
           simulatorValues: { ...(cache[key]?.simulatorValues || {}), ...(member.values || {}), ...(member.lifeSkills || {}) },
+          simulatorProfile: {
+            player: { equipment: member.equipment || [] },
+            abilities: member.abilities || [],
+            triggerMap: member.triggerMap || {},
+            houseRooms: member.houseRooms || {},
+            weaponType: member.values?.weaponType || "",
+          },
         };
       });
       localStorage.setItem(GUILD_LEVEL_CACHE_KEY, JSON.stringify(cache));
       saveSettings();
       setStatus(`已拉取并合并 ${remoteMembers.length} 名会员的本周上传；手工评分未覆盖。`);
-      switchTab("settings");
+      renderMemberEditor();
+      switchTab("members");
     } catch (error) {
-      setStatus(`拉取会员上传失败：${error.message}`);
+      setStatus(`拉取会员资料失败：${error.message}`);
       switchTab("settings");
     }
   }
@@ -1042,11 +1199,11 @@
       if (trials.life.length !== 4 || trials.combat.length !== 2) throw new Error(`试炼数据不完整：生活 ${trials.life.length}/4、战斗 ${trials.combat.length}/2。`);
       let bossProfiles = {};
       try { bossProfiles = JSON.parse(state.bossProfilesJson || "{}"); }
-      catch (_) { throw new Error("Boss 属性 JSON 无法解析。"); }
+      catch (_) { throw new Error("首领属性参数无法解析。"); }
       const roster = readRemoteRoster();
       const payload = buildRemoteConfigPayload(trials, state.remoteGuildId, getCurrentWeekId(), bossProfiles, roster);
       await remoteApi("/v1/leader/config", "PUT", payload);
-      setStatus(`本周试炼、Boss 权重和 ${payload.memberNames.length} 名会员名单已同步。`);
+      setStatus(`已同步本周试炼、首领属性和 ${payload.memberNames.length} 名会员名单。`);
     } catch (error) {
       setStatus(`同步本周试炼失败：${error.message}`);
     }
@@ -1061,7 +1218,7 @@
       const weekId = getCurrentWeekId();
       let bossProfiles = {};
       try { bossProfiles = JSON.parse(state.bossProfilesJson || "{}"); }
-      catch (_) { throw new Error("Boss 属性 JSON 无法解析。"); }
+      catch (_) { throw new Error("首领属性参数无法解析。"); }
       const roster = readRemoteRoster();
       await remoteApi("/v1/leader/config", "PUT", buildRemoteConfigPayload({
         life: latestPlan.lifeAssignments.map((group) => group.trial),
@@ -1082,8 +1239,8 @@
 
   async function remoteApi(path, method, body) {
     const endpoint = String(state.remoteEndpoint || "").trim().replace(/\/+$/, "");
-    if (!/^https:\/\//i.test(endpoint)) throw new Error("远程服务地址必须使用 HTTPS。");
-    if (!/^[A-Za-z0-9_-]{1,64}$/.test(state.remoteGuildId || "")) throw new Error("公会 ID 只能包含字母、数字、下划线和连字符。");
+    if (!/^https:\/\//i.test(endpoint)) throw new Error("服务地址必须使用 HTTPS。");
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(state.remoteGuildId || "")) throw new Error("公会编号只能包含字母、数字、下划线和连字符。");
     if (!state.remoteLeaderToken) throw new Error("请填写会长令牌。");
     const response = await fetch(`${endpoint}${path}`, {
       method,
@@ -1116,6 +1273,7 @@
             trialName: group.trial.zh || group.trial.key,
             score: Number(assigned.score) || 0,
             reason: String(assigned.note || ""),
+            skills: Array.isArray(assigned.skills) ? assigned.skills.slice(0, 3).map((skill) => String(skill || "").slice(0, 80)).filter(Boolean) : [],
           };
         });
       });
@@ -1144,7 +1302,7 @@
 
   function readRemoteRoster() {
     const members = parseCsv(state.membersCsv).map(normalizeMember).filter((member) => member.name);
-    if (!members.length) throw new Error("成员 CSV 为空，请先在公会成员页读取成员。");
+    if (!members.length) throw new Error("成员资料为空，请先在公会成员页读取成员。");
     return members;
   }
 
@@ -1206,7 +1364,7 @@
     const members = parseCsv(state.membersCsv).map(normalizeMember).filter((member) => member.name);
     if (!members.length) {
       el.result.innerHTML = "";
-      setStatus("成员 CSV 为空。请在“成员”页点击“读取成员”，再补充能力评分。");
+      setStatus("成员资料为空，请先在公会成员页面点击“读取成员”。");
       return;
     }
     const unsigned = new Set(pageTrials.unsignedNames.map(normalizeText));
@@ -1216,6 +1374,7 @@
 
     const lifeAssignments = assignLifeByBestSkill(eligibleMembers, trials.life);
     const combatAssignments = assignCombatByGuildRules(eligibleMembers, trials.combat);
+    decorateCombatAssignments(combatAssignments, eligibleMembers);
     latestPlan = {
       generatedAt: new Date().toLocaleString(),
       lifeAssignments,
@@ -1227,6 +1386,73 @@
       trials,
     };
     renderPlan(latestPlan);
+  }
+
+  function decorateCombatAssignments(groups, members) {
+    const memberByName = new Map(members.map((member) => [normalizeText(member.name), member]));
+    const cache = readGuildLevelCache();
+    groups.forEach((group) => {
+      group.members.forEach((assigned) => {
+        const member = memberByName.get(normalizeText(assigned.name)) || { role: "dps", raw: {} };
+        const profile = cache[normalizeText(assigned.name)]?.simulatorProfile || null;
+        assigned.skills = recommendCombatSkills(member, group.trial, profile);
+      });
+    });
+  }
+
+  function formatAbilityName(hrid) {
+    const key = String(hrid || "").split("/").pop() || "";
+    const names = {
+      mystic_aura: "神秘光环",
+      quick_aid: "快速援助",
+      natures_veil: "自然帷幕",
+      toxic_pollen: "剧毒花粉",
+      entangle: "缠绕",
+      revive: "复苏",
+      healing_aura: "治疗光环",
+      fountain_of_life: "生命之泉",
+      fireball: "火球术",
+      frost_bolt: "寒冰箭",
+      ice_spear: "冰矛",
+      rain_of_arrows: "箭雨",
+      quick_shot: "快速射击",
+    };
+    return names[key] || key.replace(/_/g, " ");
+  }
+
+  function recommendCombatSkills(member, trial, profile) {
+    const fallback = {
+      badger: ["单体法术", "减益技能", "治疗或护盾"],
+      chameleon: ["单体物理", "减益技能", "治疗或护盾"],
+      jellyfish: ["单体法术", "治疗技能", "续航辅助"],
+      hedgehog: ["单体法术", "治疗技能", "续航技能"],
+      swarm: ["全体攻击", "群体治疗", "减益或光环"],
+    };
+    const abilities = Array.isArray(profile?.abilities) ? profile.abilities : [];
+    const triggerMap = profile?.triggerMap && typeof profile.triggerMap === "object" ? profile.triggerMap : {};
+    if (!abilities.length) return fallback[trial.key] || ["按首领属性选择技能"];
+    const aoeTrial = trial.style === "aoe" || trial.key === "swarm";
+    const sustainTrial = ["jellyfish", "hedgehog", "swarm"].includes(trial.key);
+    const debuffRole = normalizeText(member?.role) === "debuff";
+    return abilities.map((ability) => {
+      const hrid = String(ability?.abilityHrid || "");
+      const key = normalizeText(hrid.split("/").pop());
+      const targets = (triggerMap[hrid] || []).map((trigger) => String(trigger?.dependencyHrid || ""));
+      const allEnemies = targets.some((target) => target.includes("all_enemies"));
+      const oneEnemy = targets.some((target) => target.includes("targeted_enemy"));
+      const allAllies = targets.some((target) => target.includes("all_allies"));
+      const support = /aura|veil|revive|aid|heal|fountain/.test(key);
+      const debuff = /toxic|entangle|curse|debuff|weaken|mark|pollen/.test(key);
+      let relevance = Number(ability?.level) / 1000;
+      if (allEnemies) relevance += aoeTrial ? 100 : 12;
+      if (oneEnemy) relevance += aoeTrial ? 15 : 100;
+      if (allAllies) relevance += sustainTrial ? 75 : 35;
+      if (support) relevance += sustainTrial ? 45 : 20;
+      if (debuff) relevance += debuffRole ? 55 : 30;
+      return { ability, relevance };
+    }).sort((a, b) => b.relevance - a.relevance || Number(b.ability.level) - Number(a.ability.level))
+      .slice(0, 3)
+      .map(({ ability }) => `${formatAbilityName(ability.abilityHrid)} ${Math.round(Number(ability.level) || 0)}级`);
   }
 
   function assignLifeByBestSkill(members, trials) {
@@ -1260,7 +1486,7 @@
       bucket.members.push({
         name: candidate.member.name,
         score: Math.round(choice.score * 10) / 10,
-        note: ["近似Leximin均衡", makeSignupChangeReason(candidate.member, bucket.trial, "life")].filter(Boolean).join("、"),
+        note: ["均衡分配", makeSignupChangeReason(candidate.member, bucket.trial, "life")].filter(Boolean).join("、"),
       });
     });
 
@@ -1332,7 +1558,7 @@
       bucket.members.push({
         name: candidate.member.name,
         score: Math.round(choice.score * 10) / 10,
-        note: [reason, "近似Leximin均衡", "人数缩放通过", makeSignupChangeReason(candidate.member, bucket.trial, "combat")].filter(Boolean).join("、"),
+        note: [reason, "均衡分配", "人数缩放通过", makeSignupChangeReason(candidate.member, bucket.trial, "combat")].filter(Boolean).join("、"),
       });
     });
 
@@ -1408,7 +1634,7 @@
     try {
       return { ...DEFAULT_BOSS_PROFILES, ...JSON.parse(state.bossProfilesJson || "{}") };
     } catch (_) {
-      setStatus("Boss 属性 JSON 解析失败，已使用默认权重。");
+      setStatus("首领属性参数解析失败，已使用默认参数。");
       return DEFAULT_BOSS_PROFILES;
     }
   }
@@ -1449,7 +1675,7 @@
   function makeCombatProfileReason(member, trial, profile) {
     const tags = profile?.tags || [];
     const reasons = [];
-    if (tags.includes("aoe")) reasons.push("AOE");
+    if (tags.includes("aoe")) reasons.push("群体攻击");
     if (tags.includes("physical") && member.damageType === "physical") reasons.push("物理适配");
     if (tags.includes("magic") && member.damageType === "magic") reasons.push("法系适配");
     if (tags.includes("low-magic-evasion")) reasons.push("低魔闪374");
@@ -1458,7 +1684,7 @@
     if (tags.includes("sustain") && (member.role === "healer" || numberValue(member.raw.sustain))) reasons.push("续航");
     if (tags.includes("support") && numberValue(member.raw.support)) reasons.push("辅助");
     if (matchesPreference(member.preferCombat, trial)) reasons.push("偏好");
-    return reasons.join("、") || profile?.label || "";
+    return reasons.join("、") || "属性适配";
   }
 
   function assignRatioPool(members, buckets, ratios, note) {
@@ -1582,7 +1808,7 @@
 
   function makeReason(member, trial, type) {
     const reasons = [];
-    if (type === "combat" && trial.style === "aoe") reasons.push("AOE");
+    if (type === "combat" && trial.style === "aoe") reasons.push("群体攻击");
     if (matchesPreference(member.preferLife, trial) || matchesPreference(member.preferCombat, trial)) reasons.push("偏好");
     return reasons.join("、");
   }
@@ -1622,14 +1848,11 @@
     el.result.innerHTML = `
       ${lifeHtml}
       ${combatHtml}
-      <table class="mwi-gta-table">
-        <tbody>
-          <tr><th>生活未分配</th><td>${escapeHtml(plan.unassignedLife.join(", ") || "无")}</td></tr>
-          <tr><th>战斗未分配</th><td>${escapeHtml(plan.unassignedCombat.join(", ") || "无")}</td></tr>
-          <tr><th>需取消生活报名</th><td>${escapeHtml(plan.cancelLife.join(", ") || "无")}</td></tr>
-          <tr><th>需取消战斗报名</th><td>${escapeHtml(plan.cancelCombat.join(", ") || "无")}</td></tr>
-        </tbody>
-      </table>
+      <div class="mwi-gta-summary">
+        <details><summary>生活未分配 ${plan.unassignedLife.length} 人</summary><p>${escapeHtml(plan.unassignedLife.join("、") || "无")}</p></details>
+        <details><summary>战斗未分配 ${plan.unassignedCombat.length} 人</summary><p>${escapeHtml(plan.unassignedCombat.join("、") || "无")}</p></details>
+        ${(plan.cancelLife.length || plan.cancelCombat.length) ? `<details><summary>需要取消原报名</summary><p>生活：${escapeHtml(plan.cancelLife.join("、") || "无")}<br>战斗：${escapeHtml(plan.cancelCombat.join("、") || "无")}</p></details>` : ""}
+      </div>
     `;
     const fallbackLife = plan.lifeAssignments.reduce((count, group) => count + group.members.filter((member) => member.note.includes("缺少生活评分")).length, 0);
     const fallback = fallbackLife ? `；生活兜底 ${fallbackLife} 人` : "";
@@ -1638,23 +1861,32 @@
   }
 
   function renderAssignmentTable(title, groups) {
-    const rows = groups.map((group) => {
-      const names = group.members.map((member) => `${escapeHtml(member.name)} <span style="color:#9fb0dd">(${member.score}${member.note ? ", " + escapeHtml(member.note) : ""})</span>`).join("<br>");
+    const sections = groups.map((group) => {
+      const members = group.members.map((member) => {
+        const skills = Array.isArray(member.skills) && member.skills.length
+          ? `<div class="mwi-gta-skills">技能建议：${member.skills.map(escapeHtml).join("、")}</div>`
+          : "";
+        return `<div class="mwi-gta-assigned">
+          <div class="mwi-gta-assigned-name">${escapeHtml(member.name)}</div>
+          <div class="mwi-gta-assigned-meta">评分 ${member.score}${member.note ? " · " + escapeHtml(member.note) : ""}</div>
+          ${skills}
+        </div>`;
+      }).join("");
       const available = trialAvailableCapacity(group.trial);
       const signedLabel = state.replanAll ? "当前乱报" : "已报";
-      const signed = Number.isFinite(group.trial.signed) ? `<br><span style="color:#8792b7">${signedLabel} ${group.trial.signed}/${group.trial.capacity}</span>` : "";
-      const hpScale = group.trial.type === "combat" ? `<br><span style="color:#8792b7">预计HP ×${combatHpMultiplier(group).toFixed(2)}</span>` : "";
+      const signed = Number.isFinite(group.trial.signed) ? ` · ${signedLabel} ${group.trial.signed}/${group.trial.capacity}` : "";
+      const hpScale = group.trial.type === "combat" ? ` · 敌方生命 ${combatHpMultiplier(group).toFixed(2)}倍` : "";
       const totalScore = group.members.reduce((sum, member) => sum + numberValue(member.score), 0);
       const effective = Math.round(scaledGroupStrength(group) * 10) / 10;
-      const strength = `<br><span style="color:#bfffe8">总值 ${Math.round(totalScore * 10) / 10} / 折算 ${effective}</span>`;
-      return `<tr><td>${escapeHtml(group.trial.zh)}</td><td>${group.members.length}/${available}${signed}${strength}${hpScale}</td><td>${names || "<span style='color:#8792b7'>无</span>"}</td></tr>`;
+      return `<section class="mwi-gta-group">
+        <div class="mwi-gta-group-head">
+          <div class="mwi-gta-group-title">${escapeHtml(group.trial.zh)}</div>
+          <div class="mwi-gta-group-stats">建议 ${group.members.length}/${available}${signed} · 总分 ${Math.round(totalScore * 10) / 10} · 折算 ${effective}${hpScale}</div>
+        </div>
+        <div class="mwi-gta-assigned-list">${members || `<div class="mwi-gta-note">暂无成员</div>`}</div>
+      </section>`;
     }).join("");
-    return `
-      <table class="mwi-gta-table">
-        <thead><tr><th colspan="3">${escapeHtml(title)}</th></tr><tr><th>试炼</th><th>人数</th><th>成员</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    `;
+    return `<div><h3>${escapeHtml(title)}</h3>${sections}</div>`;
   }
 
   function copyPlan() {
@@ -1681,7 +1913,7 @@
     });
     lines.push("", "战斗试炼");
     plan.combatAssignments.forEach((group) => {
-      lines.push(`${group.trial.zh} (建议 ${group.members.length}/${trialAvailableCapacity(group.trial)}，当前报名 ${group.trial.signed}/${group.trial.capacity}，折算强度 ${Math.round(scaledGroupStrength(group) * 10) / 10}，预计HP ×${combatHpMultiplier(group).toFixed(2)}): ${group.members.map((member) => `${member.name}(${member.score}${member.note ? ", " + member.note : ""})`).join(", ") || "-"}`);
+      lines.push(`${group.trial.zh} (建议 ${group.members.length}/${trialAvailableCapacity(group.trial)}，当前报名 ${group.trial.signed}/${group.trial.capacity}，折算强度 ${Math.round(scaledGroupStrength(group) * 10) / 10}，敌方生命 ${combatHpMultiplier(group).toFixed(2)}倍): ${group.members.map((member) => `${member.name}(${member.score}${member.note ? ", " + member.note : ""}${member.skills?.length ? "，技能建议 " + member.skills.join("/") : ""})`).join(", ") || "-"}`);
     });
     if (plan.unassignedLife.length) lines.push("", `生活未分配: ${plan.unassignedLife.join(", ")}`);
     if (plan.unassignedCombat.length) lines.push(`战斗未分配: ${plan.unassignedCombat.join(", ")}`);

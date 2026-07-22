@@ -139,6 +139,7 @@ function normalizeAssignmentPart(part) {
     trialName: String(part.trialName || part.trialKey).trim().slice(0, 24),
     score: Number.isFinite(Number(part.score)) ? Number(part.score) : 0,
     reason: String(part.reason || "").trim().slice(0, 240),
+    skills: (Array.isArray(part.skills) ? part.skills : []).slice(0, 3).map((skill) => String(skill || "").trim().slice(0, 80)).filter(Boolean),
   };
 }
 

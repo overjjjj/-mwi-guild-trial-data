@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼会员端
 // @namespace    https://www.milkywayidle.com/
-// @version      0.3.0
+// @version      0.4.0
 // @description  按公会名单和角色名上传本角色的公会试炼资料，并显示个人适配和正式分配。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
@@ -62,7 +62,7 @@
     style.textContent = `
       #mwi-gtm-launcher{position:fixed;right:68px;bottom:16px;z-index:2147483646;width:44px;height:44px;border:1px solid #6da7df;border-radius:8px;background:#233247;color:#d8f2ff;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35)}
       #mwi-gtm-panel{position:fixed;right:16px;top:84px;z-index:2147483647;width:min(520px,calc(100vw - 32px));max-height:calc(100vh - 110px);display:none;grid-template-rows:auto 1fr;border:1px solid #55799d;border-radius:8px;background:#202938;color:#edf5ff;box-shadow:0 14px 42px rgba(0,0,0,.48);font:13px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;overflow:hidden}
-      #mwi-gtm-panel[data-open="1"]{display:grid}#mwi-gtm-panel *{box-sizing:border-box}.mwi-gtm-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #3c526b;background:#283649}.mwi-gtm-title{font-size:15px;font-weight:800;color:#b7e6ff}.mwi-gtm-body{overflow:auto;padding:12px}.mwi-gtm-field{display:grid;gap:4px;margin-bottom:9px;color:#cfe0f2}.mwi-gtm-field input,.mwi-gtm-field textarea{width:100%;border:1px solid #49637f;border-radius:6px;background:#141c27;color:#fff;padding:7px 8px;font:inherit}.mwi-gtm-field textarea{min-height:74px;resize:vertical;font-family:ui-monospace,Consolas,monospace}.mwi-gtm-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.mwi-gtm-btn{min-height:30px;border:1px solid #587a9d;border-radius:6px;background:#344b65;color:#f3f8ff;padding:5px 9px;cursor:pointer}.mwi-gtm-btn.primary{background:#326c91;border-color:#65a9d5;font-weight:700}.mwi-gtm-note{color:#aebfd1;margin:0 0 10px}.mwi-gtm-section{border-top:1px solid #35495e;padding-top:10px;margin-top:10px}.mwi-gtm-section h3{font-size:13px;margin:0 0 6px;color:#d8ecff}.mwi-gtm-table{width:100%;border-collapse:collapse;background:#18222f}.mwi-gtm-table td,.mwi-gtm-table th{padding:6px 7px;border-bottom:1px solid #304154;text-align:left;vertical-align:top}.mwi-gtm-good{color:#9fe39f}.mwi-gtm-warn{color:#ffd18a}
+      #mwi-gtm-panel[data-open="1"]{display:grid}#mwi-gtm-panel *{box-sizing:border-box}.mwi-gtm-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #3c526b;background:#283649}.mwi-gtm-title{font-size:15px;font-weight:800;color:#b7e6ff}.mwi-gtm-body{overflow:auto;padding:12px}.mwi-gtm-field{display:grid;gap:4px;margin-bottom:9px;color:#cfe0f2}.mwi-gtm-field input,.mwi-gtm-field textarea{width:100%;border:1px solid #49637f;border-radius:6px;background:#141c27;color:#fff;padding:7px 8px;font:inherit}.mwi-gtm-field textarea{min-height:74px;resize:vertical;font-family:ui-monospace,Consolas,monospace}.mwi-gtm-actions{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.mwi-gtm-btn{min-height:30px;border:1px solid #587a9d;border-radius:6px;background:#344b65;color:#f3f8ff;padding:5px 9px;cursor:pointer}.mwi-gtm-btn.primary{background:#326c91;border-color:#65a9d5;font-weight:700}.mwi-gtm-note{color:#aebfd1;margin:0 0 10px}.mwi-gtm-section{border-top:1px solid #35495e;padding-top:10px;margin-top:10px}.mwi-gtm-section h3{font-size:13px;margin:0 0 6px;color:#d8ecff}.mwi-gtm-table{width:100%;border-collapse:collapse;background:#18222f}.mwi-gtm-table td,.mwi-gtm-table th{padding:6px 7px;border-bottom:1px solid #304154;text-align:left;vertical-align:top}.mwi-gtm-good{color:#9fe39f}.mwi-gtm-warn{color:#ffd18a}.mwi-gtm-settings{margin-bottom:10px}.mwi-gtm-settings summary{cursor:pointer;color:#cfe0f2;padding:5px 0}.mwi-gtm-skills{margin-top:5px;color:#aef0c9}
     `;
     document.documentElement.appendChild(style);
 
@@ -78,13 +78,16 @@
     panel.innerHTML = `
       <div class="mwi-gtm-head"><div class="mwi-gtm-title">公会试炼会员端</div><button class="mwi-gtm-btn" data-action="close">关闭</button></div>
       <div class="mwi-gtm-body">
-        <label class="mwi-gtm-field">服务地址<input id="mwi-gtm-endpoint" type="url" placeholder="https://your-project.vercel.app"></label>
-        <label class="mwi-gtm-field">公会 ID<input id="mwi-gtm-guild" type="text" placeholder="例如 guild-cn-1"></label>
+        <details class="mwi-gtm-settings">
+          <summary>连接设置</summary>
+          <label class="mwi-gtm-field">服务地址<input id="mwi-gtm-endpoint" type="url" placeholder="https://your-project.vercel.app"></label>
+          <label class="mwi-gtm-field">公会编号<input id="mwi-gtm-guild" type="text" placeholder="例如 guild-cn-1"></label>
+          <button class="mwi-gtm-btn" data-action="save">保存连接</button>
+          <button class="mwi-gtm-btn" data-action="read">只读取本角色</button>
+        </details>
         <div class="mwi-gtm-actions">
-          <button class="mwi-gtm-btn" data-action="save">保存设置</button>
-          <button class="mwi-gtm-btn" data-action="read">读取本角色</button>
-          <button class="mwi-gtm-btn primary" data-action="upload">上传并刷新</button>
-          <button class="mwi-gtm-btn" data-action="refresh">仅刷新分配</button>
+          <button class="mwi-gtm-btn primary" data-action="upload">一键上传并查看分配</button>
+          <button class="mwi-gtm-btn" data-action="refresh">只查看最新分配</button>
         </div>
         <p class="mwi-gtm-note" id="mwi-gtm-status">尚未读取角色数据。</p>
         <div id="mwi-gtm-profile"></div>
@@ -184,8 +187,8 @@
   function renderProfile(el, profile) {
     el.profile.innerHTML = `<div class="mwi-gtm-section"><h3>本地角色资料</h3><table class="mwi-gtm-table"><tbody>
       <tr><th>角色</th><td>${escapeHtml(profile.name || "尚未读取")}</td></tr>
-      <tr><th>战斗</th><td>等级 ${profile.values.combatLevel || 0}；${escapeHtml(profile.values.weaponType || "未知武器")}；装备 ${profile.equipment.length}；能力 ${profile.abilities.length}</td></tr>
-      <tr><th>专业</th><td>${Object.entries(profile.lifeSkills).map(([key, value]) => `${escapeHtml(key)} ${value}`).join("，") || "未读取"}</td></tr>
+      <tr><th>战斗</th><td>等级 ${profile.values.combatLevel || 0}；${escapeHtml(translateWeapon(profile.values.weaponType))}；装备 ${profile.equipment.length}；技能 ${profile.abilities.length}</td></tr>
+      <tr><th>专业</th><td>${Object.entries(profile.lifeSkills).map(([key, value]) => `${escapeHtml(translateLifeSkill(key))} ${value}`).join("，") || "未读取"}</td></tr>
     </tbody></table></div>`;
   }
 
@@ -205,12 +208,20 @@
       el.assignment.innerHTML = `<div class="mwi-gtm-section"><h3>正式分配</h3><p class="mwi-gtm-warn">会长尚未发布你的正式方案。</p></div>`;
       return;
     }
-    const part = (value) => value ? `${escapeHtml(value.trialName || value.trialKey)}（${value.score || 0}${value.reason ? "，" + escapeHtml(value.reason) : ""}）` : "未分配";
+    const part = (value) => value ? `${escapeHtml(value.trialName || value.trialKey)}（评分 ${value.score || 0}${value.reason ? "，" + escapeHtml(value.reason) : ""}）${value.skills?.length ? `<div class="mwi-gtm-skills">技能建议：${value.skills.map(escapeHtml).join("、")}</div>` : ""}` : "未分配";
     el.assignment.innerHTML = `<div class="mwi-gtm-section"><h3>正式分配</h3><table class="mwi-gtm-table"><tbody>
       <tr><th>生活</th><td class="mwi-gtm-good">${part(assignment.life)}</td></tr>
       <tr><th>战斗</th><td class="mwi-gtm-good">${part(assignment.combat)}</td></tr>
       <tr><th>发布时间</th><td>${status.assignmentPublishedAt ? new Date(status.assignmentPublishedAt).toLocaleString() : "-"}</td></tr>
     </tbody></table></div>`;
+  }
+
+  function translateLifeSkill(key) {
+    return ({ milking: "挤奶", foraging: "采摘", woodcutting: "伐木", cheesesmithing: "炼金", crafting: "制作", tailoring: "裁缝", cooking: "烹饪", brewing: "酿造", alchemy: "炼药", enhancing: "强化" })[key] || key;
+  }
+
+  function translateWeapon(key) {
+    return ({ water: "水系武器", fire: "火系武器", nature: "自然系武器", sword: "剑", blunt: "钝器", spear: "长矛", bow: "弓", crossbow: "弩", bulwark: "盾牌" })[key] || "未知武器";
   }
 
   function loadSettings() {
@@ -225,7 +236,7 @@
   function normalizeMemberIdentity(guildIdValue, nameValue) {
     const guildId = String(guildIdValue || "").trim();
     const name = String(nameValue || "").trim();
-    if (!/^[A-Za-z0-9_-]{1,64}$/.test(guildId)) throw new Error("公会 ID 只能包含字母、数字、下划线和连字符。");
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(guildId)) throw new Error("公会编号只能包含字母、数字、下划线和连字符。");
     if (!name) throw new Error("请先读取本角色，确认角色名后再上传或刷新。");
     return { guildId, name };
   }

@@ -11,6 +11,7 @@ for (const id of ["mwi-gtm-launcher", "mwi-gtm-panel", "mwi-gtm-endpoint", "mwi-
 }
 assert.equal(source.includes("mwi-gtm-token"), false, "member token field should be removed");
 for (const action of ["read", "upload", "refresh"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
+assert.match(source, /技能建议/);
 
 function loadFunction(name) {
   const marker = `function ${name}(`;
@@ -43,7 +44,7 @@ const normalizeMemberIdentity = loadFunction("normalizeMemberIdentity");
 const identity = normalizeMemberIdentity(" guild-cn-1 ", " Alice ");
 assert.equal(identity.guildId, "guild-cn-1");
 assert.equal(identity.name, "Alice");
-assert.throws(() => normalizeMemberIdentity("bad guild", "Alice"), /公会 ID/);
+assert.throws(() => normalizeMemberIdentity("bad guild", "Alice"), /公会编号/);
 assert.throws(() => normalizeMemberIdentity("guild-cn-1", ""), /角色/);
 
 const skills = {

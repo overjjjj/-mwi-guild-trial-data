@@ -54,6 +54,11 @@ const normalizeText = loadFunction("normalizeText");
 const normalizeRole = loadFunction("normalizeRole", { normalizeText });
 const normalizeDamageType = loadFunction("normalizeDamageType", { normalizeText });
 const normalizeMember = loadFunction("normalizeMember", { normalizeRole, normalizeDamageType });
+const parseCsvRows = loadFunction("parseCsvRows");
+const parseCsv = loadFunction("parseCsv", { parseCsvRows });
+const updateCsvMemberSettings = loadFunction("updateCsvMemberSettings", { parseCsvRows, encodeCsvCell: String, normalizeText });
+const formatAbilityName = loadFunction("formatAbilityName");
+const recommendCombatSkills = loadFunction("recommendCombatSkills", { formatAbilityName, normalizeText });
 const hasTestCapacity = (bucket) => bucket && bucket.members.length < bucket.trial.capacity;
 const assignLifeByBestSkill = loadFunction("assignLifeByBestSkill", {
   scoreMember: (member, trial) => Number(member.raw[trial.key] || 0),
@@ -152,11 +157,12 @@ assert.throws(() => buildSimulatorImportRecord(JSON.stringify({ ...exported, cha
 const remotePayload = buildRemoteAssignmentPayload({
   generatedAt: "2026/7/20 12:00:00",
   lifeAssignments: [{ trial: { key: "foraging", zh: "采摘" }, members: [{ name: "Alice", score: 136, note: "专业最高" }] }],
-  combatAssignments: [{ trial: { key: "swarm", zh: "虫群" }, members: [{ name: "Alice", score: 92.4, note: "AOE适配" }] }],
+  combatAssignments: [{ trial: { key: "swarm", zh: "虫群" }, members: [{ name: "Alice", score: 92.4, note: "AOE适配", skills: ["剧毒花粉 70级"] }] }],
 }, "guild-1", "2026-07-17", [{ memberId: "m-alice", name: "Alice" }]);
 assert.equal(remotePayload.guildId, "guild-1");
 assert.equal(remotePayload.members["m-alice"].life.trialKey, "foraging");
 assert.equal(remotePayload.members["m-alice"].combat.reason, "AOE适配");
+assert.deepEqual(JSON.parse(JSON.stringify(remotePayload.members["m-alice"].combat.skills)), ["剧毒花粉 70级"]);
 const remoteConfig = buildRemoteConfigPayload({
   life: [{ key: "foraging", zh: "采摘", capacity: 20, signed: 3 }],
   combat: [{ key: "swarm", zh: "虫群", capacity: 40, signed: 2 }],
@@ -201,6 +207,30 @@ const combatGroups = assignCombatByBossProfiles([
 ], testTrials, {});
 assert.deepEqual(JSON.parse(JSON.stringify(combatGroups.map((group) => group.members.map((member) => member.name)))), [["Flexible"], ["Fixed"]]);
 assert.match(combatGroups[1].members[0].note, /固定位置/);
+
+const editedCsv = updateCsvMemberSettings("name,combat\nAlice,136", "Alice", {
+  role: "debuff",
+  fixedCombat: "swarm",
+  preferLife: "foraging",
+  preferCombat: "swarm",
+});
+const editedMember = parseCsv(editedCsv)[0];
+assert.equal(editedMember.combat, "136");
+assert.equal(editedMember.role, "debuff");
+assert.equal(editedMember.fixedCombat, "swarm");
+assert.equal(editedMember.preferLife, "foraging");
+
+const recommendationProfile = {
+  abilities: exported.abilities,
+  triggerMap: exported.triggerMap,
+};
+const swarmSkills = recommendCombatSkills({ role: "debuff" }, { key: "swarm", style: "aoe" }, recommendationProfile);
+const badgerSkills = recommendCombatSkills({ role: "dps" }, { key: "badger", style: "single" }, recommendationProfile);
+const fallbackSkills = recommendCombatSkills({ role: "dps" }, { key: "swarm", style: "aoe" }, null);
+assert.match(swarmSkills[0], /剧毒花粉/);
+assert.match(badgerSkills[0], /缠绕/);
+assert.equal(swarmSkills.length <= 3, true);
+assert.deepEqual(JSON.parse(JSON.stringify(fallbackSkills)), ["全体攻击", "群体治疗", "减益或光环"]);
 
 console.log("simulator import tests passed");
 
