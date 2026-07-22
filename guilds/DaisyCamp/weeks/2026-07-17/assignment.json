@@ -2,22 +2,28 @@
   "schemaVersion": 1,
   "guildId": "DaisyCamp",
   "weekId": "2026-07-17",
-  "generatedAt": "2026/7/21 14:28:43",
-  "publishedAt": "2026-07-21T06:29:14.233Z",
+  "generatedAt": "2026/7/22 14:21:27",
+  "publishedAt": "2026-07-22T06:21:43.953Z",
   "members": {
     "m-3e74f304124d2f633bbb": {
       "name": "zc0804",
       "life": {
-        "trialKey": "foraging",
-        "trialName": "采摘",
-        "score": 104,
-        "reason": "全局最高总值、保持原报名"
+        "trialKey": "cheesesmithing",
+        "trialName": "炼金",
+        "score": 84,
+        "reason": "均衡分配、改报 foraging→炼金",
+        "skills": []
       },
       "combat": {
         "trialKey": "badger",
         "trialName": "獾",
-        "score": 52.9,
-        "reason": "低魔闪374、人数缩放通过、保持原报名"
+        "score": 85.7,
+        "reason": "法系适配、低魔闪374、均衡分配、人数缩放通过、保持原报名",
+        "skills": [
+          "缠绕 73级",
+          "快速援助 62级",
+          "剧毒花粉 70级"
+        ]
       }
     }
   }
