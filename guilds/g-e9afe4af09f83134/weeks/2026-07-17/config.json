@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-e9afe4af09f83134",
+  "weekId": "2026-07-17",
+  "updatedAt": "2026-07-22T09:12:53.305Z",
+  "lifeTrials": [
+    {
+      "key": "foraging",
+      "zh": "采摘",
+      "capacity": 24,
+      "signed": 22
+    },
+    {
+      "key": "woodcutting",
+      "zh": "伐木",
+      "capacity": 24,
+      "signed": 20
+    },
+    {
+      "key": "cheesesmithing",
+      "zh": "炼金",
+      "capacity": 24,
+      "signed": 22
+    },
+    {
+      "key": "enhancing",
+      "zh": "强化",
+      "capacity": 24,
+      "signed": 21
+    }
+  ],
+  "combatTrials": [
+    {
+      "key": "badger",
+      "zh": "獾",
+      "capacity": 48,
+      "signed": 43
+    },
+    {
+      "key": "swarm",
+      "zh": "虫群",
+      "capacity": 48,
+      "signed": 42
+    }
+  ],
+  "memberNames": [
+    "Aloha",
+    "HongChaCN",
+    "gegeda",
+    "STONESLLL",
+    "LD233",
+    "myzb",
+    "shadow610",
+    "CogitoErgoSum",
+    "CrownedGrouth",
+    "Ntian",
+    "TinTin",
+    "UmiEvan",
+    "zxcvbnm123580",
+    "Season",
+    "cxdv",
+    "HUYOMO",
+    "momojiang",
+    "happysugarlife",
+    "Chagama",
+    "yukl",
+    "npc1",
+    "Nerdanel",
+    "5555qb",
+    "111c",
+    "kingarthur",
+    "DIESHADOW940",
+    "greatpeter",
+    "daweide",
+    "Daniel1231",
+    "1533",
+    "qwerasdzcv",
+    "weihu",
+    "ruirui123321",
+    "lopkuu",
+    "fishfair",
+    "ZzQQy",
+    "SilverLily",
+    "Leon111",
+    "lookxzm",
+    "Acathere",
+    "lionsoul",
+    "KirikoIdle",
+    "KaneK1sS",
+    "Shank789",
+    "DADoES",
+    "yuyuovo",
+    "YunaOvO",
+    "FerrisTheCrab",
+    "rts1122",
+    "E2E",
+    "HaiYao",
+    "workworkOVO",
+    "ShinodaW",
+    "yingzhige",
+    "Darkling",
+    "showguner",
+    "Admas",
+    "YuWan",
+    "Instigator",
+    "Sinlong",
+    "Minidoracat",
+    "chaoren",
+    "nzi03417",
+    "04HC",
+    "nezha6",
+    "nolem",
+    "alonglongago",
+    "1wepwawet",
+    "durdun",
+    "Slumber",
+    "sonofshark",
+    "Tsukiiiiii",
+    "DaiwaScarlet",
+    "probe",
+    "MLong",
+    "sdsadas65",
+    "Doumzi",
+    "Angutoria",
+    "MZH",
+    "ly4236",
+    "hayamism",
+    "zcidle",
+    "Hachimi",
+    "Annalise",
+    "ZYwilson",
+    "feilongdan",
+    "popolalala"
+  ],
+  "bossProfiles": {
+    "badger": {
+      "label": "magic-single-low-evasion",
+      "weights": {
+        "magic": 1.7,
+        "single": 1.25,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.55,
+        "support": 0.3,
+        "physical": 0.2
+      },
+      "tags": [
+        "single",
+        "magic",
+        "low-magic-evasion"
+      ]
+    },
+    "swarm": {
+      "label": "aoe-mixed-four-targets",
+      "weights": {
+        "aoe": 1.8,
+        "magic": 1,
+        "blunt": 0.85,
+        "ranged": 0.75,
+        "stab": 0.7,
+        "slash": 0.7,
+        "physical": 0.55,
+        "healer": 0.85,
+        "tank": 0.8,
+        "support": 0.8,
+        "sustain": 0.75
+      },
+      "tags": [
+        "aoe",
+        "mixed-damage",
+        "four-targets",
+        "sustain",
+        "support"
+      ]
+    }
+  }
+}
