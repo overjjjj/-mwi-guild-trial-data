@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.16.0
+// @version      0.17.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
 // @author       Codex
+// @updateURL    https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-allocator.user.js
+// @downloadURL  https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-allocator.user.js
 // @match        https://www.milkywayidle.com/*
 // @match        https://test.milkywayidle.com/*
 // @match        https://www.milkywayidlecn.com/*
@@ -93,6 +95,11 @@
     remoteEndpoint: "",
     remoteGuildId: "",
     remoteLeaderToken: "",
+    issuesOnly: true,
+    lastSyncedWeekId: "",
+    lastPulledWeekId: "",
+    lastPublishedWeekId: "",
+    lastUploadedNames: [],
   };
 
   installGuildLevelCapture();
@@ -319,6 +326,18 @@
     .mwi-gta-field textarea { min-height: 220px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
     .mwi-gta-member-tools { display: flex; gap: 8px; align-items: end; margin-bottom: 10px; }
     .mwi-gta-member-tools .mwi-gta-field { flex: 1; }
+    .mwi-gta-readiness { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+    .mwi-gta-ready-item {
+      min-height: 28px;
+      border: 1px solid rgba(141, 166, 255, .28);
+      border-radius: 6px;
+      background: #202a35;
+      color: #d9e4ec;
+      padding: 4px 8px;
+      font: inherit;
+    }
+    button.mwi-gta-ready-item { cursor: pointer; }
+    .mwi-gta-ready-item.warn { border-color: #b78867; color: #ffd3aa; background: #392f2b; }
     .mwi-gta-member-list { display: grid; gap: 6px; }
     .mwi-gta-member-row {
       display: grid;
@@ -341,6 +360,8 @@
     }
     .mwi-gta-member-name { min-width: 0; font-weight: 700; color: #fff; overflow-wrap: anywhere; }
     .mwi-gta-member-score { display: block; color: #8fa0cb; font-size: 12px; font-weight: 400; }
+    .mwi-gta-member-issues { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+    .mwi-gta-issue { border-radius: 4px; padding: 1px 5px; background: #4b382f; color: #ffd3aa; font-size: 11px; font-weight: 500; }
     .mwi-gta-group { margin-top: 10px; border-top: 1px solid rgba(141, 166, 255, .28); }
     .mwi-gta-group-head { display: flex; justify-content: space-between; gap: 12px; padding: 9px 2px; align-items: baseline; }
     .mwi-gta-group-title { font-size: 14px; font-weight: 800; color: #f2f5ff; }
@@ -419,6 +440,8 @@
   const state = loadState();
   let latestPlan = null;
   let remoteMembers = [];
+  let currentTrialSnapshot = { life: [], combat: [], unsignedNames: [] };
+  let selectedMemberIssue = "";
 
   const launcher = document.createElement("button");
   launcher.id = "mwi-gta-launcher";
@@ -433,10 +456,7 @@
     <div class="mwi-gta-head">
       <div class="mwi-gta-title">公会试炼分配助手</div>
       <div class="mwi-gta-actions">
-        <button class="mwi-gta-btn" data-action="scan">读取试炼</button>
-        <button class="mwi-gta-btn" data-action="members">读取成员</button>
-        <button class="mwi-gta-btn primary" data-action="plan">生成分配</button>
-        <button class="mwi-gta-btn" data-action="remote-publish">发布方案</button>
+        <button class="mwi-gta-btn primary" id="mwi-gta-smart-action" data-action="smart">读取试炼</button>
         <button class="mwi-gta-btn" data-action="close">关闭</button>
       </div>
     </div>
@@ -450,9 +470,10 @@
     <div class="mwi-gta-body">
       <div class="mwi-gta-view active" data-view="plan">
         <p class="mwi-gta-note" id="mwi-gta-status">先点“读取试炼”或直接“生成分配”。</p>
+        <div id="mwi-gta-readiness" class="mwi-gta-readiness"></div>
         <div id="mwi-gta-trials"></div>
         <div id="mwi-gta-result"></div>
-        <div class="mwi-gta-actions" style="margin-top:10px"><button class="mwi-gta-btn" data-action="copy">复制结果</button></div>
+        <div class="mwi-gta-actions" style="margin-top:10px"><button class="mwi-gta-btn" data-action="copy">复制结果</button><button class="mwi-gta-btn" data-action="remote-publish">发布方案</button></div>
       </div>
       <div class="mwi-gta-view" data-view="members">
         <div class="mwi-gta-member-tools">
@@ -460,7 +481,8 @@
           <button class="mwi-gta-btn" data-action="profile">读取已打开的资料</button>
           <button class="mwi-gta-btn" data-action="remote-pull">拉取会员资料</button>
         </div>
-        <p class="mwi-gta-note">只需设置特殊成员。固定战斗留空时由系统自动分配。</p>
+        <label class="mwi-gta-check"><input id="mwi-gta-issues-only" type="checkbox">只看需处理</label>
+        <p class="mwi-gta-note" id="mwi-gta-member-filter-note">只需设置特殊成员。固定战斗留空时由系统自动分配。</p>
         <div id="mwi-gta-member-editor" class="mwi-gta-member-list"></div>
       </div>
       <div class="mwi-gta-view" data-view="settings">
@@ -565,16 +587,22 @@
     remoteToken: panel.querySelector("#mwi-gta-remote-token"),
     memberEditor: panel.querySelector("#mwi-gta-member-editor"),
     memberSearch: panel.querySelector("#mwi-gta-member-search"),
+    issuesOnly: panel.querySelector("#mwi-gta-issues-only"),
+    memberFilterNote: panel.querySelector("#mwi-gta-member-filter-note"),
+    readiness: panel.querySelector("#mwi-gta-readiness"),
+    smartAction: panel.querySelector("#mwi-gta-smart-action"),
   };
 
   hydrateSettings();
-  renderTrialSummary(scanPageTrials());
+  renderTrialSummary(readCurrentTrials());
+  renderReadiness();
 
   launcher.addEventListener("click", () => {
     const open = panel.dataset.open === "1";
     panel.dataset.open = open ? "0" : "1";
     if (!open) {
-      renderTrialSummary(scanPageTrials());
+      renderTrialSummary(readCurrentTrials());
+      renderReadiness();
     }
   });
 
@@ -582,11 +610,13 @@
     el.excludeSigned.disabled = el.replanAll.checked;
   });
 
-  el.memberSearch.addEventListener("input", () => {
-    const query = normalizeText(el.memberSearch.value);
-    el.memberEditor.querySelectorAll("[data-member-row]").forEach((row) => {
-      row.hidden = query && !normalizeText(row.dataset.memberRow).includes(query);
-    });
+  el.memberSearch.addEventListener("input", renderMemberEditor);
+
+  el.issuesOnly.addEventListener("change", () => {
+    state.issuesOnly = el.issuesOnly.checked;
+    if (!state.issuesOnly) selectedMemberIssue = "";
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderMemberEditor();
   });
 
   panel.addEventListener("change", (event) => {
@@ -598,25 +628,41 @@
     state.membersCsv = el.csv.value;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setStatus(`已保存 ${control.dataset.memberName} 的成员设置。`);
+    renderMemberEditor();
+    renderReadiness();
   });
 
-  panel.addEventListener("click", (event) => {
+  panel.addEventListener("click", async (event) => {
     const tab = event.target.closest("[data-tab]");
     if (tab) {
       switchTab(tab.dataset.tab);
       return;
     }
+    const issueFilter = event.target.closest("[data-issue]");
+    if (issueFilter) {
+      const issue = issueFilter.dataset.issue || "all";
+      selectedMemberIssue = selectedMemberIssue === issue ? "" : issue;
+      state.issuesOnly = true;
+      el.issuesOnly.checked = true;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      switchTab("members");
+      return;
+    }
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     if (action === "close") panel.dataset.open = "0";
-    if (action === "scan") renderTrialSummary(scanPageTrials(), true);
+    if (action === "smart") await runSmartAction();
+    if (action === "scan") {
+      renderTrialSummary(readCurrentTrials(), true);
+      renderReadiness();
+    }
     if (action === "members") importMembersFromPage();
     if (action === "profile") captureCurrentProfile();
     if (action === "read-simulator") readCompatibleSimulatorExport();
     if (action === "import-simulator") importSimulatorExport(el.simulatorJson.value);
-    if (action === "remote-config") syncRemoteConfig();
-    if (action === "remote-pull") pullRemoteMembers();
-    if (action === "remote-publish") publishRemotePlan();
+    if (action === "remote-config") await syncRemoteConfig();
+    if (action === "remote-pull") await pullRemoteMembers();
+    if (action === "remote-publish") await publishRemotePlan();
     if (action === "plan") buildAndRenderPlan();
     if (action === "copy") copyPlan();
     if (action === "save") saveSettings();
@@ -630,6 +676,7 @@
       Object.assign(state, DEFAULT_STATE);
       hydrateSettings();
       setStatus("已重置为默认设置。");
+      renderReadiness();
     }
   });
 
@@ -654,10 +701,12 @@
     el.remoteEndpoint.value = state.remoteEndpoint || "";
     el.remoteGuild.value = state.remoteGuildId || "";
     el.remoteToken.value = state.remoteLeaderToken || "";
+    el.issuesOnly.checked = state.issuesOnly !== false;
     renderMemberEditor();
   }
 
   function saveSettings() {
+    const previousConnection = `${state.remoteEndpoint}|${state.remoteGuildId}`;
     state.membersCsv = el.csv.value.trim();
     state.bossProfilesJson = el.bossProfiles.value.trim() || JSON.stringify(DEFAULT_BOSS_PROFILES, null, 2);
     state.lifeCapacity = clampNumber(el.lifeCap.value, 24);
@@ -667,15 +716,150 @@
     state.remoteEndpoint = el.remoteEndpoint.value.trim();
     state.remoteGuildId = el.remoteGuild.value.trim();
     state.remoteLeaderToken = el.remoteToken.value.trim();
+    state.issuesOnly = el.issuesOnly.checked;
+    if (previousConnection !== `${state.remoteEndpoint}|${state.remoteGuildId}`) {
+      state.lastSyncedWeekId = "";
+      state.lastPulledWeekId = "";
+      state.lastPublishedWeekId = "";
+      state.lastUploadedNames = [];
+    }
     el.excludeSigned.disabled = !!state.replanAll;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     setStatus("设置已保存。");
+    renderReadiness();
+  }
+
+  function readCurrentTrials() {
+    const scanned = scanPageTrials();
+    const scannedCount = scanned.life.length + scanned.combat.length;
+    const rememberedCount = currentTrialSnapshot.life.length + currentTrialSnapshot.combat.length;
+    if (scannedCount > 0 && scannedCount >= rememberedCount) currentTrialSnapshot = scanned;
+    return currentTrialSnapshot;
+  }
+
+  function resolveSmartAction(summary, workflow, remoteConfigured, hasPlan) {
+    if (!summary?.trialsComplete) return { action: "scan", label: "读取试炼" };
+    if (!summary?.memberCount) return { action: "members", label: "读取成员" };
+    if (!remoteConfigured) return { action: "plan", label: hasPlan ? "重新生成" : "生成分配" };
+    const weekId = workflow?.currentWeekId || "";
+    if (workflow?.syncedWeekId !== weekId) return { action: "remote-config", label: "同步本周名单" };
+    if (workflow?.pulledWeekId !== weekId) return { action: "remote-pull", label: "拉取会员资料" };
+    if (!hasPlan) return { action: "plan", label: "生成分配" };
+    if (workflow?.publishedWeekId !== weekId) return { action: "remote-publish", label: "发布方案" };
+    return { action: "plan", label: "重新生成" };
+  }
+
+  function getMemberIssues(member, trials, profile, uploadedNames, checkUpload) {
+    const issues = [];
+    const weaponType = memberWeaponType(member, profile);
+    if (!weaponType) issues.push("missing-profession");
+    const abilityCount = Math.max(numberValue(member?.raw?.abilityCount), Array.isArray(profile?.abilities) ? profile.abilities.length : 0);
+    if (!abilityCount) issues.push("missing-skills");
+    if (member?.role === "healer" && weaponType !== "nature") issues.push("healer-class");
+    if (member?.role === "healer" && weaponType === "nature" && numberValue(member?.raw?.healer) <= 0) issues.push("healer-skill");
+    const combatTrials = Array.isArray(trials?.combat) ? trials.combat : [];
+    const fixedCombat = normalizeText(member?.fixedCombat);
+    if (fixedCombat && combatTrials.length && !combatTrials.some((trial) => [trial.key, trial.zh].some((value) => normalizeText(value) === fixedCombat))) issues.push("fixed-trial");
+    const uploaded = new Set((uploadedNames || []).map(normalizeText));
+    if (checkUpload && !uploaded.has(normalizeText(member?.name))) issues.push("not-uploaded");
+    return issues;
+  }
+
+  function getReadinessSummary() {
+    const trials = readCurrentTrials();
+    const members = parseCsv(el.csv.value).map(normalizeMember).filter((member) => member.name);
+    const weekId = getCurrentWeekId();
+    const checkUpload = state.lastPulledWeekId === weekId;
+    const uploadedNames = Array.isArray(state.lastUploadedNames) ? state.lastUploadedNames : [];
+    const cache = readGuildLevelCache();
+    const memberIssues = members.map((member) => ({
+      member,
+      issues: getMemberIssues(member, trials, cache[normalizeText(member.name)]?.simulatorProfile || null, uploadedNames, checkUpload),
+    }));
+    return {
+      trials,
+      trialsComplete: trials.life.length === 4 && trials.combat.length === 2,
+      memberCount: members.length,
+      professionComplete: memberIssues.filter((item) => !item.issues.includes("missing-profession")).length,
+      skillsComplete: memberIssues.filter((item) => !item.issues.includes("missing-skills")).length,
+      uploadedComplete: members.filter((member) => uploadedNames.some((name) => normalizeText(name) === normalizeText(member.name))).length,
+      checkUpload,
+      attentionCount: memberIssues.filter((item) => item.issues.length).length,
+    };
+  }
+
+  function renderReadiness() {
+    const summary = getReadinessSummary();
+    const totalTrials = summary.trials.life.length + summary.trials.combat.length;
+    const item = (label, value, warn, attributes) => `<button type="button" class="mwi-gta-ready-item${warn ? " warn" : ""}" ${attributes}>${escapeHtml(label)} ${escapeHtml(value)}</button>`;
+    el.readiness.innerHTML = [
+      item("试炼", `${totalTrials}/6`, !summary.trialsComplete, 'data-action="scan"'),
+      item("成员", summary.memberCount, !summary.memberCount, 'data-action="members"'),
+      item("职业完整", `${summary.professionComplete}/${summary.memberCount}`, summary.professionComplete < summary.memberCount, 'data-issue="missing-profession"'),
+      item("技能完整", `${summary.skillsComplete}/${summary.memberCount}`, summary.skillsComplete < summary.memberCount, 'data-issue="missing-skills"'),
+      ...(summary.checkUpload ? [item("已上传", `${summary.uploadedComplete}/${summary.memberCount}`, summary.uploadedComplete < summary.memberCount, 'data-issue="not-uploaded"')] : []),
+      item("需处理", summary.attentionCount, summary.attentionCount > 0, 'data-issue="all"'),
+    ].join("");
+    const smart = resolveSmartAction(summary, {
+      currentWeekId: getCurrentWeekId(),
+      syncedWeekId: state.lastSyncedWeekId,
+      pulledWeekId: state.lastPulledWeekId,
+      publishedWeekId: state.lastPublishedWeekId,
+    }, !!(state.remoteEndpoint && state.remoteGuildId && state.remoteLeaderToken), !!latestPlan);
+    el.smartAction.textContent = smart.label;
+    el.smartAction.dataset.nextAction = smart.action;
+  }
+
+  async function runSmartAction() {
+    const action = el.smartAction.dataset.nextAction || "scan";
+    el.smartAction.disabled = true;
+    try {
+      if (action === "scan") renderTrialSummary(readCurrentTrials(), true);
+      if (action === "members") importMembersFromPage();
+      if (action === "remote-config") await syncRemoteConfig();
+      if (action === "remote-pull") await pullRemoteMembers();
+      if (action === "plan") buildAndRenderPlan();
+      if (action === "remote-publish") await publishRemotePlan();
+    } finally {
+      el.smartAction.disabled = false;
+      renderReadiness();
+    }
   }
 
   function renderMemberEditor() {
     const members = parseCsv(el.csv.value).map(normalizeMember).filter((member) => member.name);
     if (!members.length) {
       el.memberEditor.innerHTML = `<p class="mwi-gta-note">尚无成员，请先在公会成员页面点击“读取成员”。</p>`;
+      el.memberFilterNote.textContent = "读取成员后，这里默认只显示资料不完整或设置冲突的成员。";
+      return;
+    }
+    const issueLabels = {
+      "missing-profession": "职业未读取",
+      "missing-skills": "技能未读取",
+      "healer-class": "治疗仅限自然法师",
+      "healer-skill": "未确认治疗技能",
+      "fixed-trial": "固定位置不在本周",
+      "not-uploaded": "本周未上传",
+    };
+    const trials = readCurrentTrials();
+    const weekId = getCurrentWeekId();
+    const checkUpload = state.lastPulledWeekId === weekId;
+    const uploadedNames = Array.isArray(state.lastUploadedNames) ? state.lastUploadedNames : [];
+    const cache = readGuildLevelCache();
+    const query = normalizeText(el.memberSearch.value);
+    const memberRows = members.map((member) => ({
+      member,
+      issues: getMemberIssues(member, trials, cache[normalizeText(member.name)]?.simulatorProfile || null, uploadedNames, checkUpload),
+    })).filter(({ member, issues }) => {
+      if (query && !normalizeText(member.name).includes(query)) return false;
+      if (selectedMemberIssue && selectedMemberIssue !== "all" && !issues.includes(selectedMemberIssue)) return false;
+      if ((state.issuesOnly !== false || selectedMemberIssue) && !issues.length) return false;
+      return true;
+    });
+    const filterLabel = selectedMemberIssue ? `，当前筛选：${selectedMemberIssue === "all" ? "全部问题" : issueLabels[selectedMemberIssue] || selectedMemberIssue}` : "";
+    el.memberFilterNote.textContent = `显示 ${memberRows.length}/${members.length} 人${filterLabel}。取消“只看需处理”可查看完整名单。`;
+    if (!memberRows.length) {
+      el.memberEditor.innerHTML = `<p class="mwi-gta-note">当前筛选下没有成员。</p>`;
       return;
     }
     const optionHtml = (items, current) => items.map(([value, label]) => (
@@ -684,7 +868,7 @@
     const combatOptions = [["", "固定：自动"], ...COMBAT_TRIALS.map((trial) => [trial.key, `固定：${trial.zh}`])];
     const lifeOptions = [["", "生活：无偏好"], ...LIFE_TRIALS.map((trial) => [trial.key, `生活：${trial.zh}`])];
     const preferCombatOptions = [["", "战斗：无偏好"], ...COMBAT_TRIALS.map((trial) => [trial.key, `战斗：${trial.zh}`])];
-    el.memberEditor.innerHTML = members.map((member) => {
+    el.memberEditor.innerHTML = memberRows.map(({ member, issues }) => {
       const lifeScores = LIFE_TRIALS.map((trial) => ({ trial, score: numberValue(member.raw[trial.key]) }))
         .sort((a, b) => b.score - a.score);
       const bestLife = lifeScores[0]?.score > 0 ? `${lifeScores[0].trial.zh} ${lifeScores[0].score}` : "生活未读取";
@@ -697,7 +881,7 @@
           ${optionHtml(options, current)}
         </select></label>`;
       return `<div class="mwi-gta-member-row" data-member-row="${dataName}">
-        <div class="mwi-gta-member-name">${dataName}<span class="mwi-gta-member-score">${escapeHtml(formatWeaponClass(weaponType))} · ${escapeHtml(bestLife)} · 战斗 ${combatScore || "未读取"}</span></div>
+        <div class="mwi-gta-member-name">${dataName}<span class="mwi-gta-member-score">${escapeHtml(formatWeaponClass(weaponType))} · ${escapeHtml(bestLife)} · 战斗 ${combatScore || "未读取"}</span>${issues.length ? `<span class="mwi-gta-member-issues">${issues.map((issue) => `<span class="mwi-gta-issue">${escapeHtml(issueLabels[issue] || issue)}</span>`).join("")}</span>` : ""}</div>
         ${select("role", "职责", roleOptions, member.role)}
         ${select("fixedCombat", "固定战斗", combatOptions, member.fixedCombat)}
         ${select("preferLife", "生活偏好", lifeOptions, member.preferLife)}
@@ -869,10 +1053,12 @@
     });
     const levelCount = records.filter((record) => Object.values(record.values).some((value) => numberValue(value) > 0)).length;
     el.csv.value = mergeMemberRecordsIntoCsv(el.csv.value, records);
+    state.lastSyncedWeekId = "";
     saveSettings();
     renderMemberEditor();
     switchTab("members");
     setStatus(`已合并 ${names.length} 名成员，其中 ${levelCount} 人读取到游戏已推送的等级；手工评分未覆盖。`);
+    renderReadiness();
   }
 
   function captureCurrentProfile() {
@@ -1189,6 +1375,8 @@
         };
       });
       localStorage.setItem(GUILD_LEVEL_CACHE_KEY, JSON.stringify(cache));
+      state.lastPulledWeekId = getCurrentWeekId();
+      state.lastUploadedNames = remoteMembers.map((member) => member.name).filter(Boolean);
       saveSettings();
       setStatus(`已拉取并合并 ${remoteMembers.length} 名会员的本周上传；手工评分未覆盖。`);
       renderMemberEditor();
@@ -1202,7 +1390,7 @@
   async function syncRemoteConfig() {
     try {
       saveSettings();
-      const trials = scanPageTrials();
+      const trials = readCurrentTrials();
       if (trials.life.length !== 4 || trials.combat.length !== 2) throw new Error(`试炼数据不完整：生活 ${trials.life.length}/4、战斗 ${trials.combat.length}/2。`);
       let bossProfiles = {};
       try { bossProfiles = JSON.parse(state.bossProfilesJson || "{}"); }
@@ -1210,7 +1398,10 @@
       const roster = readRemoteRoster();
       const payload = buildRemoteConfigPayload(trials, state.remoteGuildId, getCurrentWeekId(), bossProfiles, roster);
       await remoteApi("/v1/leader/config", "PUT", payload);
+      state.lastSyncedWeekId = getCurrentWeekId();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       setStatus(`已同步本周试炼、首领属性和 ${payload.memberNames.length} 名会员名单。`);
+      renderReadiness();
     } catch (error) {
       setStatus(`同步本周试炼失败：${error.message}`);
     }
@@ -1233,7 +1424,10 @@
       }, state.remoteGuildId, weekId, bossProfiles, roster));
       const payload = buildRemoteAssignmentPayload(latestPlan, state.remoteGuildId, weekId, remoteMembers);
       const result = await remoteApi("/v1/leader/assignment", "PUT", payload);
+      state.lastPublishedWeekId = weekId;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       setStatus(`已发布本周方案，${result.memberCount} 名已上传会员可在会员端查看。`);
+      renderReadiness();
     } catch (error) {
       setStatus(`发布方案失败：${error.message}`);
     }
@@ -1360,7 +1554,7 @@
   function buildAndRenderPlan() {
     latestPlan = null;
     saveSettings();
-    const pageTrials = scanPageTrials();
+    const pageTrials = readCurrentTrials();
     renderTrialSummary(pageTrials);
     if (pageTrials.life.length !== 4 || pageTrials.combat.length !== 2) {
       setStatus(`试炼数据不完整：识别到生活 ${pageTrials.life.length}/4、战斗 ${pageTrials.combat.length}/2。请在公会“试炼”页重新读取。`);
@@ -1393,6 +1587,7 @@
       trials,
     };
     renderPlan(latestPlan);
+    renderReadiness();
   }
 
   function decorateCombatAssignments(groups, members) {

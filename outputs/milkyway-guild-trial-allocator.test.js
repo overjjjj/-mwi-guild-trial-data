@@ -11,6 +11,10 @@ for (const id of ["mwi-gta-remote-endpoint", "mwi-gta-remote-guild", "mwi-gta-re
 assert.equal(source.includes("mwi-gta-remote-output"), false, "member invite output should be removed");
 assert.equal(source.includes('data-action="remote-invites"'), false, "member invite action should be removed");
 for (const action of ["remote-config", "remote-pull", "remote-publish"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
+assert.match(source, /@updateURL\s+https:\/\/raw\.githubusercontent\.com\/overjjjj\/-mwi-guild-trial-data\/main\/outputs\/milkyway-guild-trial-allocator\.user\.js/);
+assert.match(source, /id="mwi-gta-smart-action"/);
+assert.match(source, /id="mwi-gta-readiness"/);
+assert.match(source, /id="mwi-gta-issues-only"/);
 
 function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;
@@ -66,6 +70,8 @@ const parseCsv = loadFunction("parseCsv", { parseCsvRows });
 const updateCsvMemberSettings = loadFunction("updateCsvMemberSettings", { parseCsvRows, encodeCsvCell: String, normalizeText });
 const formatAbilityName = loadFunction("formatAbilityName");
 const recommendCombatSkills = loadFunction("recommendCombatSkills", { formatAbilityName, normalizeText, memberWeaponType, abilityMatchesWeapon, isHealingAbility });
+const resolveSmartAction = loadFunction("resolveSmartAction");
+const getMemberIssues = loadFunction("getMemberIssues", { memberWeaponType, normalizeText, numberValue });
 const hasTestCapacity = (bucket) => bucket && bucket.members.length < bucket.trial.capacity;
 const assignLifeByBestSkill = loadFunction("assignLifeByBestSkill", {
   scoreMember: (member, trial) => Number(member.raw[trial.key] || 0),
@@ -292,6 +298,23 @@ const fireTeamBuffSkills = recommendCombatSkills({ role: "dps", raw: { weaponTyp
   },
 });
 assert.equal(fireTeamBuffSkills.some((skill) => /battle shout/.test(skill)), true, "非治疗团队增益应保留");
+
+const smartBase = { currentWeekId: "2026-07-17", syncedWeekId: "", pulledWeekId: "", publishedWeekId: "" };
+assert.equal(resolveSmartAction({ trialsComplete: false, memberCount: 0 }, smartBase, true, false).action, "scan");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 0 }, smartBase, true, false).action, "members");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, smartBase, true, false).action, "remote-config");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, { ...smartBase, syncedWeekId: "2026-07-17" }, true, false).action, "remote-pull");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, { ...smartBase, syncedWeekId: "2026-07-17", pulledWeekId: "2026-07-17" }, true, false).action, "plan");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, { ...smartBase, syncedWeekId: "2026-07-17", pulledWeekId: "2026-07-17" }, true, true).action, "remote-publish");
+assert.equal(resolveSmartAction({ trialsComplete: true, memberCount: 10 }, smartBase, false, true).label, "重新生成");
+
+const issueTrials = { combat: [{ key: "swarm", zh: "虫群" }] };
+const incompleteIssues = getMemberIssues(normalizeMember({ name: "Missing" }), issueTrials, null, [], false);
+assert.deepEqual(JSON.parse(JSON.stringify(incompleteIssues)), ["missing-profession", "missing-skills"]);
+const conflictIssues = getMemberIssues(normalizeMember({ name: "FireHeal", weaponType: "fire", role: "healer", abilityCount: 2, fixedCombat: "badger" }), issueTrials, null, [], true);
+assert.deepEqual(JSON.parse(JSON.stringify(conflictIssues)), ["healer-class", "fixed-trial", "not-uploaded"]);
+const natureIssues = getMemberIssues(normalizeMember({ name: "NatureHeal", weaponType: "nature", role: "healer", abilityCount: 2, healer: 0 }), issueTrials, null, ["NatureHeal"], true);
+assert.deepEqual(JSON.parse(JSON.stringify(natureIssues)), ["healer-skill"]);
 
 console.log("simulator import tests passed");
 

@@ -12,6 +12,7 @@ for (const id of ["mwi-gtm-launcher", "mwi-gtm-panel", "mwi-gtm-endpoint", "mwi-
 assert.equal(source.includes("mwi-gtm-token"), false, "member token field should be removed");
 for (const action of ["read", "upload", "refresh"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 assert.match(source, /技能建议/);
+assert.match(source, /@updateURL\s+https:\/\/raw\.githubusercontent\.com\/overjjjj\/-mwi-guild-trial-data\/main\/outputs\/milkyway-guild-trial-member\.user\.js/);
 
 function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;
