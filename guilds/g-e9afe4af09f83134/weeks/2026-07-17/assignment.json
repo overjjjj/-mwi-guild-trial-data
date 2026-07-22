@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-e9afe4af09f83134",
+  "weekId": "2026-07-17",
+  "generatedAt": "2026/7/22 17:28:23",
+  "publishedAt": "2026-07-22T09:28:29.178Z",
+  "members": {
+    "m-0206a97843b1ba4fbb14": {
+      "name": "Aloha",
+      "life": {
+        "trialKey": "cheesesmithing",
+        "trialName": "炼金",
+        "score": 108,
+        "reason": "均衡分配、新报名",
+        "skills": []
+      },
+      "combat": {
+        "trialKey": "swarm",
+        "trialName": "虫群",
+        "score": 60.8,
+        "reason": "群体攻击、四目标混编、辅助、均衡分配、人数缩放通过、新报名",
+        "skills": [
+          "penetrating strike 80级",
+          "speed aura 60级",
+          "puncture 80级"
+        ]
+      }
+    }
+  }
+}
