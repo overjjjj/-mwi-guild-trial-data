@@ -43,7 +43,9 @@ function loadFunction(name, context = {}) {
   throw new Error(`Could not extract ${name}`);
 }
 
-const parseSimulatorExport = loadFunction("parseSimulatorExport");
+const abilityMatchesWeapon = loadFunction("abilityMatchesWeapon");
+const isHealingAbility = loadFunction("isHealingAbility");
+const parseSimulatorExport = loadFunction("parseSimulatorExport", { abilityMatchesWeapon, isHealingAbility });
 const buildSimulatorImportRecord = loadFunction("buildSimulatorImportRecord", { parseSimulatorExport });
 const buildRemoteAssignmentPayload = loadFunction("buildRemoteAssignmentPayload");
 const buildRemoteConfigPayload = loadFunction("buildRemoteConfigPayload");
@@ -54,11 +56,16 @@ const normalizeText = loadFunction("normalizeText");
 const normalizeRole = loadFunction("normalizeRole", { normalizeText });
 const normalizeDamageType = loadFunction("normalizeDamageType", { normalizeText });
 const normalizeMember = loadFunction("normalizeMember", { normalizeRole, normalizeDamageType });
+const numberValue = loadFunction("numberValue");
+const memberCombatPower = loadFunction("memberCombatPower", { numberValue });
+const memberWeaponType = loadFunction("memberWeaponType", { normalizeText });
+const isNatureHealer = loadFunction("isNatureHealer", { memberWeaponType, numberValue });
+const combatAttributeValue = loadFunction("combatAttributeValue", { numberValue, memberCombatPower, isNatureHealer });
 const parseCsvRows = loadFunction("parseCsvRows");
 const parseCsv = loadFunction("parseCsv", { parseCsvRows });
 const updateCsvMemberSettings = loadFunction("updateCsvMemberSettings", { parseCsvRows, encodeCsvCell: String, normalizeText });
 const formatAbilityName = loadFunction("formatAbilityName");
-const recommendCombatSkills = loadFunction("recommendCombatSkills", { formatAbilityName, normalizeText });
+const recommendCombatSkills = loadFunction("recommendCombatSkills", { formatAbilityName, normalizeText, memberWeaponType, abilityMatchesWeapon, isHealingAbility });
 const hasTestCapacity = (bucket) => bucket && bucket.members.length < bucket.trial.capacity;
 const assignLifeByBestSkill = loadFunction("assignLifeByBestSkill", {
   scoreMember: (member, trial) => Number(member.raw[trial.key] || 0),
@@ -133,6 +140,7 @@ assert.equal(result.values.maxAbilityLevel, 73);
 assert.equal(result.values.aoe, 70);
 assert.equal(result.values.single, 73);
 assert.equal(result.values.healer, 62);
+assert.equal(result.values.role, "healer");
 assert.equal(result.values.support, 70);
 assert.equal(result.values.combatHouseLevelSum, 14);
 assert.equal("food" in result.profile, false);
@@ -221,16 +229,69 @@ assert.equal(editedMember.fixedCombat, "swarm");
 assert.equal(editedMember.preferLife, "foraging");
 
 const recommendationProfile = {
+  weaponType: "nature",
   abilities: exported.abilities,
   triggerMap: exported.triggerMap,
 };
 const swarmSkills = recommendCombatSkills({ role: "debuff" }, { key: "swarm", style: "aoe" }, recommendationProfile);
 const badgerSkills = recommendCombatSkills({ role: "dps" }, { key: "badger", style: "single" }, recommendationProfile);
-const fallbackSkills = recommendCombatSkills({ role: "dps" }, { key: "swarm", style: "aoe" }, null);
+const fallbackSkills = recommendCombatSkills({ role: "dps", raw: { weaponType: "nature" } }, { key: "swarm", style: "aoe" }, null);
 assert.match(swarmSkills[0], /剧毒花粉/);
 assert.match(badgerSkills[0], /缠绕/);
 assert.equal(swarmSkills.length <= 3, true);
-assert.deepEqual(JSON.parse(JSON.stringify(fallbackSkills)), ["全体攻击", "群体治疗", "减益或光环"]);
+assert.deepEqual(JSON.parse(JSON.stringify(fallbackSkills)), ["群体法术", "群体治疗", "减益或光环"]);
+
+const fireExport = {
+  ...exported,
+  player: {
+    ...exported.player,
+    equipment: exported.player.equipment.map((item) => item.itemLocationHrid === "/item_locations/main_hand"
+      ? { ...item, itemHrid: "/items/blazing_staff_refined" }
+      : item),
+  },
+  abilities: [
+    { abilityHrid: "/abilities/quick_aid", level: 90 },
+    { abilityHrid: "/abilities/fireball", level: 80 },
+  ],
+  triggerMap: {
+    "/abilities/quick_aid": [{ dependencyHrid: "/combat_trigger_dependencies/all_allies" }],
+    "/abilities/fireball": [{ dependencyHrid: "/combat_trigger_dependencies/targeted_enemy" }],
+  },
+};
+const fireResult = parseSimulatorExport(JSON.stringify(fireExport));
+assert.equal(fireResult.values.weaponType, "fire");
+assert.equal(fireResult.values.healer || 0, 0, "非自然职业不能获得治疗评分");
+assert.equal(combatAttributeValue(normalizeMember({ name: "Fire", weaponType: "fire", role: "healer", healer: 99, combat: 100 }), "healer", { style: "single" }), 0);
+assert.equal(combatAttributeValue(normalizeMember({ name: "Nature", weaponType: "nature", role: "healer", healer: 99, combat: 100 }), "healer", { style: "single" }), 99);
+const fireSkills = recommendCombatSkills({ role: "dps", raw: { weaponType: "fire" } }, { key: "jellyfish", style: "single" }, fireResult.profile);
+assert.equal(fireSkills.some((skill) => /快速援助|治疗/.test(skill)), false, "非自然职业不能推荐治疗技能");
+const fireFallbackSkills = recommendCombatSkills({ role: "dps", raw: { weaponType: "fire" } }, { key: "swarm", style: "aoe" }, null);
+assert.equal(fireFallbackSkills.some((skill) => /治疗/.test(skill)), false, "非自然职业的兜底建议不能包含治疗");
+const incompatibleFireSkills = recommendCombatSkills({ role: "dps", raw: { weaponType: "fire" } }, { key: "jellyfish", style: "single" }, {
+  weaponType: "fire",
+  abilities: [{ abilityHrid: "/abilities/quick_aid", level: 90 }],
+  triggerMap: { "/abilities/quick_aid": [{ dependencyHrid: "/combat_trigger_dependencies/all_allies" }] },
+});
+assert.deepEqual(JSON.parse(JSON.stringify(incompatibleFireSkills)), ["单体法术", "减益或控制", "防护或续航"]);
+const natureBuffResult = parseSimulatorExport(JSON.stringify({
+  ...exported,
+  abilities: [{ abilityHrid: "/abilities/battle_shout", level: 88 }],
+  triggerMap: {
+    "/abilities/battle_shout": [{
+      dependencyHrid: "/combat_trigger_dependencies/all_allies",
+      conditionHrid: "/combat_trigger_conditions/battle_shout",
+    }],
+  },
+}));
+assert.equal(natureBuffResult.values.healer || 0, 0, "普通团队增益不能当成治疗技能");
+const fireTeamBuffSkills = recommendCombatSkills({ role: "dps", raw: { weaponType: "fire" } }, { key: "jellyfish", style: "single" }, {
+  weaponType: "fire",
+  abilities: [{ abilityHrid: "/abilities/battle_shout", level: 88 }],
+  triggerMap: {
+    "/abilities/battle_shout": [{ dependencyHrid: "/combat_trigger_dependencies/all_allies", conditionHrid: "/combat_trigger_conditions/battle_shout" }],
+  },
+});
+assert.equal(fireTeamBuffSkills.some((skill) => /battle shout/.test(skill)), true, "非治疗团队增益应保留");
 
 console.log("simulator import tests passed");
 

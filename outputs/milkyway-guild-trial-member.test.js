@@ -13,7 +13,7 @@ assert.equal(source.includes("mwi-gtm-token"), false, "member token field should
 for (const action of ["read", "upload", "refresh"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 assert.match(source, /技能建议/);
 
-function loadFunction(name) {
+function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;
   const start = source.indexOf(marker);
   assert.notEqual(start, -1, `${name} should exist`);
@@ -32,12 +32,14 @@ function loadFunction(name) {
     if (char === '"' || char === "'" || char === "`") { quote = char; continue; }
     if (char === "{") depth += 1;
     if (char === "}") depth -= 1;
-    if (depth === 0) return vm.runInNewContext(`(${source.slice(start, index + 1)})`);
+    if (depth === 0) return vm.runInNewContext(`(${source.slice(start, index + 1)})`, context);
   }
   throw new Error(`Could not extract ${name}`);
 }
 
-const buildMemberProfile = loadFunction("buildMemberProfile");
+const abilityMatchesWeapon = loadFunction("abilityMatchesWeapon");
+const isHealingAbility = loadFunction("isHealingAbility");
+const buildMemberProfile = loadFunction("buildMemberProfile", { abilityMatchesWeapon, isHealingAbility });
 const calculatePersonalRecommendations = loadFunction("calculatePersonalRecommendations");
 const normalizeMemberIdentity = loadFunction("normalizeMemberIdentity");
 
@@ -85,6 +87,28 @@ assert.equal(profile.lifeSkills.foraging, 136);
 assert.equal(profile.equipment.length, 1);
 assert.equal("food" in profile, false);
 
+const fireProfile = buildMemberProfile({
+  ...raw,
+  characterItems: raw.characterItems.map((item) => item.itemLocationHrid === "/item_locations/main_hand"
+    ? { ...item, itemHrid: "/items/blazing_staff_refined" }
+    : item),
+  combatUnit: { combatAbilities: [{ abilityHrid: "/abilities/quick_aid", level: 90 }] },
+  abilityCombatTriggersMap: {
+    "/abilities/quick_aid": [{ dependencyHrid: "/combat_trigger_dependencies/all_allies" }],
+  },
+});
+assert.equal(fireProfile.values.weaponType, "fire");
+assert.equal(fireProfile.values.healer || 0, 0, "非自然职业不能获得治疗评分");
+
+const natureTeamBuffProfile = buildMemberProfile({
+  ...raw,
+  combatUnit: { combatAbilities: [{ abilityHrid: "/abilities/battle_shout", level: 88 }] },
+  abilityCombatTriggersMap: {
+    "/abilities/battle_shout": [{ dependencyHrid: "/combat_trigger_dependencies/all_allies", conditionHrid: "/combat_trigger_conditions/battle_shout" }],
+  },
+});
+assert.equal(natureTeamBuffProfile.values.healer || 0, 0, "普通团队增益不能当成治疗技能");
+
 const recommendations = calculatePersonalRecommendations(profile, {
   lifeTrials: [{ key: "foraging", zh: "采摘" }, { key: "woodcutting", zh: "伐木" }],
   combatTrials: [{ key: "badger", zh: "獾" }, { key: "swarm", zh: "虫群" }],
@@ -95,6 +119,15 @@ const recommendations = calculatePersonalRecommendations(profile, {
 });
 assert.equal(recommendations.life[0].key, "foraging");
 assert.equal(recommendations.combat[0].key, "swarm");
+
+const legacyFireRecommendations = calculatePersonalRecommendations({ values: { weaponType: "fire", combat: 100, healer: 999 } }, {
+  combatTrials: [{ key: "jellyfish", zh: "水母" }, { key: "badger", zh: "獾" }],
+  bossProfiles: {
+    jellyfish: { weights: { healer: 10 } },
+    badger: { weights: {} },
+  },
+});
+assert.equal(legacyFireRecommendations.combat[0].key, "badger", "非自然职业的旧治疗分不能影响个人排名");
 
 console.log("member userscript tests passed");
 

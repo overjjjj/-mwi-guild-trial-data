@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼会员端
 // @namespace    https://www.milkywayidle.com/
-// @version      0.4.0
+// @version      0.5.0
 // @description  按公会名单和角色名上传本角色的公会试炼资料，并显示个人适配和正式分配。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
@@ -221,7 +221,29 @@
   }
 
   function translateWeapon(key) {
-    return ({ water: "水系武器", fire: "火系武器", nature: "自然系武器", sword: "剑", blunt: "钝器", spear: "长矛", bow: "弓", crossbow: "弩", bulwark: "盾牌" })[key] || "未知武器";
+    return ({ water: "水法师", fire: "火法师", nature: "自然法师", sword: "剑士", blunt: "钝器战士", spear: "长矛战士", bow: "弓手", crossbow: "弩手", bulwark: "盾兵" })[key] || "职业未读取";
+  }
+
+  function abilityMatchesWeapon(hrid, weaponType) {
+    const key = String(hrid || "").split("/").pop().toLowerCase();
+    const required = {
+      mystic_aura: "nature", quick_aid: "nature", natures_veil: "nature", toxic_pollen: "nature",
+      entangle: "nature", revive: "nature", healing_aura: "nature", fountain_of_life: "nature",
+      fireball: "fire", frost_bolt: "water", ice_spear: "water", rain_of_arrows: "ranged", quick_shot: "ranged",
+    }[key];
+    if (!required) return true;
+    if (required === "ranged") return ["bow", "crossbow"].includes(weaponType);
+    return required === weaponType;
+  }
+
+  function isHealingAbility(ability, triggerMap) {
+    const key = String(ability?.abilityHrid || "").split("/").pop().toLowerCase();
+    if (/aid|heal|fountain|revive/.test(key)) return true;
+    return (triggerMap?.[ability?.abilityHrid] || []).some((trigger) => {
+      const target = String(trigger?.dependencyHrid || "");
+      const condition = String(trigger?.conditionHrid || "");
+      return /all_allies|targeted_ally/.test(target) && /hp|health/.test(condition);
+    });
   }
 
   function loadSettings() {
@@ -312,16 +334,18 @@
     const magicWeapon = ["water", "fire", "nature"].includes(weaponType);
     const rangedWeapon = ["bow", "crossbow"].includes(weaponType);
     const physicalWeapon = rangedWeapon || ["sword", "blunt", "spear", "bulwark"].includes(weaponType);
-    const abilityLevelByTarget = (target) => Math.max(0, ...abilities.filter((ability) => (triggerMap[ability.abilityHrid] || []).some((trigger) => String(trigger?.dependencyHrid || "").includes(target))).map((ability) => ability.level));
-    const support = Math.max(0, ...abilities.filter((ability) => /aura|veil|revive/i.test(ability.abilityHrid)).map((ability) => ability.level));
+    const compatibleAbilities = abilities.filter((ability) => abilityMatchesWeapon(ability.abilityHrid, weaponType));
+    const abilityLevelByTarget = (target) => Math.max(0, ...compatibleAbilities.filter((ability) => (triggerMap[ability.abilityHrid] || []).some((trigger) => String(trigger?.dependencyHrid || "").includes(target))).map((ability) => ability.level));
+    const support = Math.max(0, ...compatibleAbilities.filter((ability) => /aura|veil|revive/i.test(ability.abilityHrid)).map((ability) => ability.level));
     const combatHouseNames = ["dining_room", "library", "dojo", "gym", "armory", "archery_range", "mystical_study"];
     const combatHouseLevelSum = Object.entries(houseRooms).filter(([hrid]) => combatHouseNames.some((house) => hrid.includes(house))).reduce((sum, [, level]) => sum + numeric(typeof level === "object" ? level?.level : level), 0);
     const values = {
       level: explicitTotalLevel, combatLevel, combat: combatLevel, attackLevel: numeric(skills.attack), defenseLevel: numeric(skills.defense), meleeLevel: numeric(skills.melee), rangedLevel: numeric(skills.ranged), magicLevel: numeric(skills.magic), staminaLevel: numeric(skills.stamina), intelligenceLevel: numeric(skills.intelligence),
       weaponType, damageType: magicWeapon ? "magic" : physicalWeapon ? "physical" : "", equipmentCount: equipment.length, combatEquipmentCount: equipment.length, maxEnhancement: Math.max(0, ...equipment.map((item) => item.enhancementLevel)), abilityCount: abilities.length, maxAbilityLevel: Math.max(0, ...abilities.map((ability) => ability.level)), combatHouseLevelSum,
     };
-    const aoe = abilityLevelByTarget("all_enemies"); const single = abilityLevelByTarget("targeted_enemy"); const healer = abilityLevelByTarget("all_allies");
-    if (aoe) values.aoe = aoe; if (single) values.single = single; if (healer) values.healer = healer; if (support) values.support = support;
+    const aoe = abilityLevelByTarget("all_enemies"); const single = abilityLevelByTarget("targeted_enemy");
+    const healer = Math.max(0, ...compatibleAbilities.filter((ability) => isHealingAbility(ability, triggerMap)).map((ability) => ability.level));
+    if (aoe) values.aoe = aoe; if (single) values.single = single; if (healer && weaponType === "nature") { values.healer = healer; values.role = "healer"; } if (support) values.support = support;
     if (magicWeapon) values.magic = numeric(skills.magic);
     if (physicalWeapon) values.physical = Math.max(numeric(skills.melee), numeric(skills.ranged));
     if (rangedWeapon) values.ranged = numeric(skills.ranged);
@@ -348,7 +372,7 @@
       let weighted = 0; let totalWeight = 0;
       Object.entries(weights).forEach(([key, weight]) => {
         if (number(weight) <= 0) return;
-        let value = number(profile?.values?.[key]);
+        let value = key === "healer" && profile?.values?.weaponType !== "nature" ? 0 : number(profile?.values?.[key]);
         if (!value && key === "single" && trial.key !== "swarm") value = number(profile?.values?.combat);
         if (!value && key === "aoe" && trial.key === "swarm") value = number(profile?.values?.combat);
         if (!value && key === "magic" && profile?.values?.damageType === "magic") value = number(profile?.values?.combat);

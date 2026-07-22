@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.15.0
+// @version      0.16.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
 // @author       Codex
 // @match        https://www.milkywayidle.com/*
@@ -681,7 +681,6 @@
     const optionHtml = (items, current) => items.map(([value, label]) => (
       `<option value="${escapeHtml(value)}"${normalizeText(value) === normalizeText(current) ? " selected" : ""}>${escapeHtml(label)}</option>`
     )).join("");
-    const roleOptions = [["dps", "职责：输出"], ["tank", "职责：坦克"], ["healer", "职责：治疗"], ["debuff", "职责：减益"]];
     const combatOptions = [["", "固定：自动"], ...COMBAT_TRIALS.map((trial) => [trial.key, `固定：${trial.zh}`])];
     const lifeOptions = [["", "生活：无偏好"], ...LIFE_TRIALS.map((trial) => [trial.key, `生活：${trial.zh}`])];
     const preferCombatOptions = [["", "战斗：无偏好"], ...COMBAT_TRIALS.map((trial) => [trial.key, `战斗：${trial.zh}`])];
@@ -690,13 +689,15 @@
         .sort((a, b) => b.score - a.score);
       const bestLife = lifeScores[0]?.score > 0 ? `${lifeScores[0].trial.zh} ${lifeScores[0].score}` : "生活未读取";
       const combatScore = numberValue(member.raw.combat) || numberValue(member.raw.combatLevel);
+      const weaponType = memberWeaponType(member);
+      const roleOptions = [["dps", "职责：输出"], ["tank", "职责：坦克"], ...(weaponType === "nature" ? [["healer", "职责：治疗"]] : []), ["debuff", "职责：减益"]];
       const dataName = escapeHtml(member.name);
       const select = (field, label, options, current) => `
         <label title="${escapeHtml(label)}"><select data-member-name="${dataName}" data-member-field="${field}" aria-label="${escapeHtml(label)}">
           ${optionHtml(options, current)}
         </select></label>`;
       return `<div class="mwi-gta-member-row" data-member-row="${dataName}">
-        <div class="mwi-gta-member-name">${dataName}<span class="mwi-gta-member-score">${escapeHtml(bestLife)} · 战斗 ${combatScore || "未读取"}</span></div>
+        <div class="mwi-gta-member-name">${dataName}<span class="mwi-gta-member-score">${escapeHtml(formatWeaponClass(weaponType))} · ${escapeHtml(bestLife)} · 战斗 ${combatScore || "未读取"}</span></div>
         ${select("role", "职责", roleOptions, member.role)}
         ${select("fixedCombat", "固定战斗", combatOptions, member.fixedCombat)}
         ${select("preferLife", "生活偏好", lifeOptions, member.preferLife)}
@@ -1081,10 +1082,11 @@
       : [];
     const abilityTriggers = Object.fromEntries(Object.entries(data.triggerMap || {})
       .filter(([hrid]) => hrid.startsWith("/abilities/")));
-    const abilityLevelByTarget = (target) => Math.max(0, ...abilities
+    const compatibleAbilities = abilities.filter((ability) => abilityMatchesWeapon(ability.abilityHrid, weaponType));
+    const abilityLevelByTarget = (target) => Math.max(0, ...compatibleAbilities
       .filter((ability) => (abilityTriggers[ability.abilityHrid] || []).some((trigger) => String(trigger?.dependencyHrid || "").includes(target)))
       .map((ability) => ability.level));
-    const supportAbilityLevel = Math.max(0, ...abilities
+    const supportAbilityLevel = Math.max(0, ...compatibleAbilities
       .filter((ability) => /aura|veil|revive/i.test(ability.abilityHrid))
       .map((ability) => ability.level));
     const houseRooms = Object.fromEntries(Object.entries(data.houseRooms || {})
@@ -1110,10 +1112,15 @@
     };
     const aoeAbilityLevel = abilityLevelByTarget("all_enemies");
     const singleAbilityLevel = abilityLevelByTarget("targeted_enemy");
-    const healerAbilityLevel = abilityLevelByTarget("all_allies");
+    const healerAbilityLevel = Math.max(0, ...compatibleAbilities
+      .filter((ability) => isHealingAbility(ability, abilityTriggers))
+      .map((ability) => ability.level));
     if (aoeAbilityLevel) values.aoe = aoeAbilityLevel;
     if (singleAbilityLevel) values.single = singleAbilityLevel;
-    if (healerAbilityLevel) values.healer = healerAbilityLevel;
+    if (healerAbilityLevel && weaponType === "nature") {
+      values.healer = healerAbilityLevel;
+      values.role = "healer";
+    }
     if (supportAbilityLevel) values.support = supportAbilityLevel;
     if (magicWeapon) values.magic = levels.magicLevel;
     if (physicalWeapon) values.physical = Math.max(levels.meleeLevel, levels.rangedLevel);
@@ -1400,6 +1407,44 @@
     });
   }
 
+  function formatWeaponClass(weaponType) {
+    return ({
+      nature: "自然法师", water: "水法师", fire: "火法师", sword: "剑士", blunt: "钝器战士",
+      spear: "长矛战士", bow: "弓手", crossbow: "弩手", bulwark: "盾兵",
+    })[weaponType] || "职业未读取";
+  }
+
+  function memberWeaponType(member, profile) {
+    return normalizeText(profile?.weaponType || member?.raw?.weaponType || member?.weaponType || "");
+  }
+
+  function abilityMatchesWeapon(hrid, weaponType) {
+    const key = String(hrid || "").split("/").pop().toLowerCase();
+    const required = {
+      mystic_aura: "nature", quick_aid: "nature", natures_veil: "nature", toxic_pollen: "nature",
+      entangle: "nature", revive: "nature", healing_aura: "nature", fountain_of_life: "nature",
+      fireball: "fire", frost_bolt: "water", ice_spear: "water", rain_of_arrows: "ranged", quick_shot: "ranged",
+    }[key];
+    if (!required) return true;
+    if (required === "ranged") return ["bow", "crossbow"].includes(weaponType);
+    return required === weaponType;
+  }
+
+  function isHealingAbility(ability, triggerMap) {
+    const key = String(ability?.abilityHrid || "").split("/").pop().toLowerCase();
+    if (/aid|heal|fountain|revive/.test(key)) return true;
+    return (triggerMap?.[ability?.abilityHrid] || []).some((trigger) => {
+      const target = String(trigger?.dependencyHrid || "");
+      const condition = String(trigger?.conditionHrid || "");
+      return /all_allies|targeted_ally/.test(target) && /hp|health/.test(condition);
+    });
+  }
+
+  function isNatureHealer(member) {
+    return memberWeaponType(member) === "nature"
+      && (numberValue(member?.raw?.healer) > 0 || member?.role === "healer");
+  }
+
   function formatAbilityName(hrid) {
     const key = String(hrid || "").split("/").pop() || "";
     const names = {
@@ -1421,12 +1466,24 @@
   }
 
   function recommendCombatSkills(member, trial, profile) {
-    const fallback = {
+    const weaponType = memberWeaponType(member, profile);
+    const natureProfession = weaponType === "nature";
+    const magicProfession = ["nature", "water", "fire"].includes(weaponType);
+    const rangedProfession = ["bow", "crossbow"].includes(weaponType);
+    const singleAttack = magicProfession ? "单体法术" : rangedProfession ? "单体远程" : "单体物理";
+    const groupAttack = magicProfession ? "群体法术" : rangedProfession ? "群体远程" : "群体物理";
+    const fallback = natureProfession ? {
       badger: ["单体法术", "减益技能", "治疗或护盾"],
-      chameleon: ["单体物理", "减益技能", "治疗或护盾"],
+      chameleon: ["单体法术", "减益技能", "治疗或护盾"],
       jellyfish: ["单体法术", "治疗技能", "续航辅助"],
       hedgehog: ["单体法术", "治疗技能", "续航技能"],
-      swarm: ["全体攻击", "群体治疗", "减益或光环"],
+      swarm: ["群体法术", "群体治疗", "减益或光环"],
+    } : {
+      badger: [singleAttack, "减益或控制", "防护或续航"],
+      chameleon: [singleAttack, "减益或控制", "防护或续航"],
+      jellyfish: [singleAttack, "减益或控制", "防护或续航"],
+      hedgehog: [singleAttack, "减益或控制", "防护或续航"],
+      swarm: [groupAttack, "减益或控制", "防护或续航"],
     };
     const abilities = Array.isArray(profile?.abilities) ? profile.abilities : [];
     const triggerMap = profile?.triggerMap && typeof profile.triggerMap === "object" ? profile.triggerMap : {};
@@ -1434,13 +1491,15 @@
     const aoeTrial = trial.style === "aoe" || trial.key === "swarm";
     const sustainTrial = ["jellyfish", "hedgehog", "swarm"].includes(trial.key);
     const debuffRole = normalizeText(member?.role) === "debuff";
-    return abilities.map((ability) => {
+    const ranked = abilities.map((ability) => {
       const hrid = String(ability?.abilityHrid || "");
       const key = normalizeText(hrid.split("/").pop());
       const targets = (triggerMap[hrid] || []).map((trigger) => String(trigger?.dependencyHrid || ""));
       const allEnemies = targets.some((target) => target.includes("all_enemies"));
       const oneEnemy = targets.some((target) => target.includes("targeted_enemy"));
       const allAllies = targets.some((target) => target.includes("all_allies"));
+      const healing = isHealingAbility(ability, triggerMap);
+      if (!abilityMatchesWeapon(hrid, weaponType) || (healing && !natureProfession)) return null;
       const support = /aura|veil|revive|aid|heal|fountain/.test(key);
       const debuff = /toxic|entangle|curse|debuff|weaken|mark|pollen/.test(key);
       let relevance = Number(ability?.level) / 1000;
@@ -1450,9 +1509,10 @@
       if (support) relevance += sustainTrial ? 45 : 20;
       if (debuff) relevance += debuffRole ? 55 : 30;
       return { ability, relevance };
-    }).sort((a, b) => b.relevance - a.relevance || Number(b.ability.level) - Number(a.ability.level))
+    }).filter(Boolean).sort((a, b) => b.relevance - a.relevance || Number(b.ability.level) - Number(a.ability.level))
       .slice(0, 3)
       .map(({ ability }) => `${formatAbilityName(ability.abilityHrid)} ${Math.round(Number(ability.level) || 0)}级`);
+    return ranked.length ? ranked : fallback[trial.key] || ["按职业和首领属性选择技能"];
   }
 
   function assignLifeByBestSkill(members, trials) {
@@ -1666,7 +1726,7 @@
     if (key === "physical") return numberValue(member.raw.physical) || (member.damageType === "physical" ? numberValue(member.raw.combat) : 0);
     if (key === "magic") return numberValue(member.raw.magic) || (member.damageType === "magic" ? numberValue(member.raw.combat) : 0);
     if (key === "tank") return numberValue(member.raw.tank) || (member.role === "tank" ? memberCombatPower(member) : 0);
-    if (key === "healer") return numberValue(member.raw.healer) || (member.role === "healer" ? memberCombatPower(member) : 0);
+    if (key === "healer") return isNatureHealer(member) ? numberValue(member.raw.healer) || memberCombatPower(member) : 0;
     if (key === "sustain") return numberValue(member.raw.sustain) || numberValue(member.raw.survival) || numberValue(member.raw.defense);
     if (key === "support") return numberValue(member.raw.support) || numberValue(member.raw.aura) || numberValue(member.raw.revive) || numberValue(member.raw.debuff) || (member.role === "debuff" ? memberCombatPower(member) : 0);
     return numberValue(member.raw[key]);
@@ -1680,8 +1740,8 @@
     if (tags.includes("magic") && member.damageType === "magic") reasons.push("法系适配");
     if (tags.includes("low-magic-evasion")) reasons.push("低魔闪374");
     if (tags.includes("four-targets")) reasons.push("四目标混编");
-    if (tags.includes("mixed-damage") && (member.role === "tank" || member.role === "healer")) reasons.push("混合伤害应对");
-    if (tags.includes("sustain") && (member.role === "healer" || numberValue(member.raw.sustain))) reasons.push("续航");
+    if (tags.includes("mixed-damage") && (member.role === "tank" || isNatureHealer(member))) reasons.push("混合伤害应对");
+    if (tags.includes("sustain") && (isNatureHealer(member) || numberValue(member.raw.sustain))) reasons.push("续航");
     if (tags.includes("support") && numberValue(member.raw.support)) reasons.push("辅助");
     if (matchesPreference(member.preferCombat, trial)) reasons.push("偏好");
     return reasons.join("、") || "属性适配";
