@@ -4,6 +4,7 @@
 
 - `milkyway-guild-trial-member.user.js`：会员端油猴脚本。
 - `milkyway-guild-trial-allocator.user.js`：会长端油猴脚本和全局分配器。
+- `QUICK-START.zh-CN.md`：会员和会长的一页最简使用教程。
 - `remote-worker/`：Vercel 同步服务，使用 fine-grained PAT 写入 GitHub 私有仓库。
 - `milkyway-guild-trial-allocator-plan.md`：算法、字段和限制说明。
 - `../public/trial-worker.js`：会长端按本机最新怪物数据运行的战斗模拟工作线程。
