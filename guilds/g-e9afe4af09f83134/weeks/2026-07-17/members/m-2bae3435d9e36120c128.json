@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-e9afe4af09f83134",
+  "memberId": "m-2bae3435d9e36120c128",
+  "name": "Shank789",
+  "updatedAt": "2026-07-23T07:27:01.832Z",
+  "values": {
+    "level": 3728,
+    "combatLevel": 139,
+    "combat": 139,
+    "attackLevel": 130,
+    "defenseLevel": 130,
+    "meleeLevel": 62,
+    "rangedLevel": 104,
+    "magicLevel": 145,
+    "staminaLevel": 130,
+    "intelligenceLevel": 130,
+    "weaponType": "fire",
+    "damageType": "magic",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 12,
+    "abilityCount": 5,
+    "maxAbilityLevel": 70,
+    "combatHouseLevelSum": 27,
+    "single": 50,
+    "magic": 145
+  },
+  "lifeSkills": {
+    "milking": 100,
+    "foraging": 100,
+    "woodcutting": 97,
+    "cheesesmithing": 98,
+    "crafting": 114,
+    "tailoring": 111,
+    "cooking": 109,
+    "brewing": 109,
+    "alchemy": 100,
+    "enhancing": 95
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/kraken_tunic",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 2
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/trainee_alchemy_charm",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/chance_cape",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blazing_trident_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/enchanted_gloves",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/red_culinary_hat",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/collectors_boots",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/kraken_chaps",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/eye_watch",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 7
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/mystic_aura",
+      "level": 46
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 70
+    },
+    {
+      "abilityHrid": "/abilities/quick_aid",
+      "level": 40
+    },
+    {
+      "abilityHrid": "/abilities/ice_spear",
+      "level": 50
+    },
+    {
+      "abilityHrid": "/abilities/water_strike",
+      "level": 50
+    }
+  ],
+  "triggerMap": {
+    "/abilities/ice_spear": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/mystic_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/mystic_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/quick_aid": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_allies",
+        "conditionHrid": "/combat_trigger_conditions/lowest_hp_percentage",
+        "comparatorHrid": "/combat_trigger_comparators/less_than_equal",
+        "value": 92
+      }
+    ],
+    "/abilities/water_strike": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 2,
+    "/house_rooms/armory": 4,
+    "/house_rooms/brewery": 2,
+    "/house_rooms/dairy_barn": 2,
+    "/house_rooms/dining_room": 4,
+    "/house_rooms/dojo": 6,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 2,
+    "/house_rooms/gym": 2,
+    "/house_rooms/kitchen": 3,
+    "/house_rooms/laboratory": 2,
+    "/house_rooms/library": 4,
+    "/house_rooms/log_shed": 2,
+    "/house_rooms/mystical_study": 5,
+    "/house_rooms/observatory": 3,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 2
+  }
+}
