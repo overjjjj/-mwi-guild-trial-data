@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-e9afe4af09f83134",
+  "memberId": "m-15310fd04ea644831030",
+  "name": "1533",
+  "updatedAt": "2026-07-23T07:24:48.397Z",
+  "values": {
+    "level": 3638,
+    "combatLevel": 138,
+    "combat": 138,
+    "attackLevel": 135,
+    "defenseLevel": 144,
+    "meleeLevel": 140,
+    "rangedLevel": 80,
+    "magicLevel": 77,
+    "staminaLevel": 121,
+    "intelligenceLevel": 122,
+    "weaponType": "spear",
+    "damageType": "physical",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 12,
+    "abilityCount": 5,
+    "maxAbilityLevel": 62,
+    "combatHouseLevelSum": 30,
+    "single": 53,
+    "support": 37,
+    "physical": 140,
+    "stab": 140
+  },
+  "lifeSkills": {
+    "milking": 102,
+    "foraging": 99,
+    "woodcutting": 101,
+    "cheesesmithing": 101,
+    "crafting": 100,
+    "tailoring": 101,
+    "cooking": 104,
+    "brewing": 94,
+    "alchemy": 105,
+    "enhancing": 93
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/sinister_cape",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathbreaker_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/dodocamel_gauntlets",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/knights_aegis_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/maelstrom_plate_legs_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/maelstrom_plate_body_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/master_attack_charm",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/corsair_helmet_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/furious_spear_refined",
+      "enhancementLevel": 12
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/speed_aura",
+      "level": 37
+    },
+    {
+      "abilityHrid": "/abilities/berserk",
+      "level": 62
+    },
+    {
+      "abilityHrid": "/abilities/frenzy",
+      "level": 49
+    },
+    {
+      "abilityHrid": "/abilities/vampirism",
+      "level": 61
+    },
+    {
+      "abilityHrid": "/abilities/puncture",
+      "level": 53
+    }
+  ],
+  "triggerMap": {
+    "/abilities/berserk": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/berserk",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/frenzy": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/frenzy",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/puncture": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/speed_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/speed_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/vampirism": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/vampirism",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 3,
+    "/house_rooms/armory": 4,
+    "/house_rooms/brewery": 3,
+    "/house_rooms/dairy_barn": 4,
+    "/house_rooms/dining_room": 5,
+    "/house_rooms/dojo": 4,
+    "/house_rooms/forge": 3,
+    "/house_rooms/garden": 3,
+    "/house_rooms/gym": 6,
+    "/house_rooms/kitchen": 3,
+    "/house_rooms/laboratory": 3,
+    "/house_rooms/library": 5,
+    "/house_rooms/log_shed": 4,
+    "/house_rooms/mystical_study": 3,
+    "/house_rooms/observatory": 4,
+    "/house_rooms/sewing_parlor": 3,
+    "/house_rooms/workshop": 3
+  }
+}
