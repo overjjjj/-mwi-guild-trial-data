@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-e9afe4af09f83134",
+  "memberId": "m-f80f4463324f0dfe8f0a",
+  "name": "MZH",
+  "updatedAt": "2026-07-23T07:28:17.438Z",
+  "values": {
+    "level": 3684,
+    "combatLevel": 125,
+    "combat": 125,
+    "attackLevel": 129,
+    "defenseLevel": 122,
+    "meleeLevel": 126,
+    "rangedLevel": 95,
+    "magicLevel": 92,
+    "staminaLevel": 120,
+    "intelligenceLevel": 114,
+    "weaponType": "spear",
+    "damageType": "physical",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 10,
+    "abilityCount": 5,
+    "maxAbilityLevel": 80,
+    "combatHouseLevelSum": 26,
+    "single": 80,
+    "support": 45,
+    "physical": 126,
+    "stab": 126
+  },
+  "lifeSkills": {
+    "milking": 101,
+    "foraging": 103,
+    "woodcutting": 100,
+    "cheesesmithing": 94,
+    "crafting": 95,
+    "tailoring": 102,
+    "cooking": 102,
+    "brewing": 106,
+    "alchemy": 138,
+    "enhancing": 103
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/furious_spear_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/alchemists_top",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/artificer_cape",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/basic_alchemy_charm",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/enchanted_gloves",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/eye_watch",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/alchemists_bottoms",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/red_culinary_hat",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/collectors_boots",
+      "enhancementLevel": 10
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/fierce_aura",
+      "level": 45
+    },
+    {
+      "abilityHrid": "/abilities/berserk",
+      "level": 72
+    },
+    {
+      "abilityHrid": "/abilities/frenzy",
+      "level": 65
+    },
+    {
+      "abilityHrid": "/abilities/vampirism",
+      "level": 68
+    },
+    {
+      "abilityHrid": "/abilities/penetrating_strike",
+      "level": 80
+    }
+  ],
+  "triggerMap": {
+    "/abilities/berserk": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/berserk",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/fierce_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/fierce_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/frenzy": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/frenzy",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/penetrating_strike": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 200
+      }
+    ],
+    "/abilities/vampirism": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/vampirism",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 1,
+    "/house_rooms/armory": 4,
+    "/house_rooms/brewery": 3,
+    "/house_rooms/dairy_barn": 2,
+    "/house_rooms/dining_room": 4,
+    "/house_rooms/dojo": 6,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 3,
+    "/house_rooms/gym": 6,
+    "/house_rooms/kitchen": 2,
+    "/house_rooms/laboratory": 8,
+    "/house_rooms/library": 4,
+    "/house_rooms/log_shed": 2,
+    "/house_rooms/mystical_study": 1,
+    "/house_rooms/observatory": 4,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 2
+  }
+}
