@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "guildId": "g-2597004f19839e2d",
   "weekId": "2026-07-17",
-  "updatedAt": "2026-07-23T05:49:57.744Z",
+  "updatedAt": "2026-07-23T05:55:22.594Z",
   "lifeTrials": [
     {
       "key": "foraging",
@@ -138,7 +138,8 @@
     "5ha0",
     "MasterYam",
     "englishnogod",
-    "MoneyUp7"
+    "MoneyUp7",
+    "yakult"
   ],
   "bossProfiles": {
     "badger": {
