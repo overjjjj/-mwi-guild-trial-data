@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-2597004f19839e2d",
+  "weekId": "2026-07-17",
+  "generatedAt": "2026/7/23 13:55:22",
+  "publishedAt": "2026-07-23T05:55:24.384Z",
+  "members": {
+    "m-2c142ed23c82bfc68539": {
+      "name": "Emeald",
+      "life": {
+        "trialKey": "cheesesmithing",
+        "trialName": "炼金",
+        "score": 75,
+        "reason": "均衡分配、改报 woodcutting→炼金",
+        "skills": []
+      },
+      "combat": {
+        "trialKey": "badger",
+        "trialName": "獾",
+        "score": 84,
+        "reason": "法系适配、低魔闪374、均衡分配、人数缩放通过、改报 swarm→獾",
+        "skills": [
+          "elemental affinity 70级",
+          "剧毒花粉 80级",
+          "缠绕 78级"
+        ]
+      }
+    }
+  }
+}
