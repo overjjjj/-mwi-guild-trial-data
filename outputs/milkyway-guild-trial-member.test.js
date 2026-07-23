@@ -6,6 +6,7 @@ const vm = require("node:vm");
 const userscriptPath = path.join(__dirname, "milkyway-guild-trial-member.user.js");
 assert.equal(fs.existsSync(userscriptPath), true, "member userscript should exist");
 const source = fs.readFileSync(userscriptPath, "utf8");
+assert.match(source, /@author\s+zc/);
 for (const id of ["mwi-gtm-launcher", "mwi-gtm-panel", "mwi-gtm-endpoint", "mwi-gtm-guild"]) {
   assert.equal((source.match(new RegExp(id, "g")) || []).length >= 1, true, `${id} should be present`);
 }

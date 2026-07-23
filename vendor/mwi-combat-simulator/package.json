@@ -1,0 +1,7 @@
+{
+  "name": "mwi-guild-trial-simulator-worker",
+  "private": true,
+  "scripts": {
+    "build": "node build-worker.mjs"
+  }
+}

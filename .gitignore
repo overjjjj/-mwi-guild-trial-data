@@ -3,3 +3,4 @@ node_modules/
 .env
 .env.*
 *.log
+vendor/mwi-combat-simulator/node_modules/

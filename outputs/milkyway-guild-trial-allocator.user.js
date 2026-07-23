@@ -1,15 +1,16 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼分配助手
 // @namespace    https://www.milkywayidle.com/
-// @version      0.18.0
+// @version      0.20.0
 // @description  根据成员能力、偏好和当前试炼名额，生成公会试炼报名推荐表。只做本地辅助推荐，不自动绕过游戏权限。
-// @author       Codex
+// @author       zc
 // @updateURL    https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-allocator.user.js
 // @downloadURL  https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-allocator.user.js
 // @match        https://www.milkywayidle.com/*
 // @match        https://test.milkywayidle.com/*
 // @match        https://www.milkywayidlecn.com/*
 // @match        https://test.milkywayidlecn.com/*
+// @require      https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js
 // @grant        GM_setClipboard
 // @grant        unsafeWindow
 // @run-at       document-idle
@@ -90,6 +91,9 @@
     bossProfileVersion: BOSS_PROFILE_VERSION,
     lifeCapacity: 24,
     combatCapacity: 48,
+    combatMinTank: 0,
+    combatMinHealer: 0,
+    combatMinDebuff: 0,
     replanAll: true,
     excludeAlreadySigned: false,
     compact: false,
@@ -332,6 +336,8 @@
     .mwi-gta-setup { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(141, 166, 255, .2); }
     .mwi-gta-setup-title { margin: 0 0 4px; color: #f2f5ff; font-size: 14px; }
     .mwi-gta-code { color: #bfffe8; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    .mwi-gta-role-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+    .mwi-gta-backup { min-height: 76px !important; }
     .mwi-gta-ready-item {
       min-height: 28px;
       border: 1px solid rgba(141, 166, 255, .28);
@@ -478,7 +484,8 @@
         <div id="mwi-gta-readiness" class="mwi-gta-readiness"></div>
         <div id="mwi-gta-trials"></div>
         <div id="mwi-gta-result"></div>
-        <div class="mwi-gta-actions" style="margin-top:10px"><button class="mwi-gta-btn" data-action="copy">复制结果</button><button class="mwi-gta-btn" data-action="remote-publish">发布方案</button></div>
+        <div class="mwi-gta-actions" style="margin-top:10px"><button class="mwi-gta-btn" data-action="copy">复制结果</button><button class="mwi-gta-btn" data-action="simulate-trials">模拟战斗</button><button class="mwi-gta-btn" data-action="remote-publish">发布方案</button></div>
+        <div id="mwi-gta-simulation"></div>
       </div>
       <div class="mwi-gta-view" data-view="members">
         <div class="mwi-gta-member-tools">
@@ -519,6 +526,13 @@
           <input id="mwi-gta-exclude-signed" type="checkbox">
           读取到“未参加/未报名”名单时，只给未报名成员分配
         </label>
+        <h3 class="mwi-gta-setup-title">战斗最低配置（每场）</h3>
+        <div class="mwi-gta-role-grid">
+          <label class="mwi-gta-field">坦克<input id="mwi-gta-min-tank" type="number" min="0" max="10"></label>
+          <label class="mwi-gta-field">自然治疗<input id="mwi-gta-min-healer" type="number" min="0" max="10"></label>
+          <label class="mwi-gta-field">减益<input id="mwi-gta-min-debuff" type="number" min="0" max="10"></label>
+        </div>
+        <p class="mwi-gta-note">固定位置先占位并计入最低配置，剩余职责成员再自动补齐；设为 0 表示不强制。</p>
         <details class="mwi-gta-advanced">
           <summary>高级连接设置</summary>
           <div class="mwi-gta-grid">
@@ -532,8 +546,12 @@
           <label class="mwi-gta-field">公会管理密钥
             <input id="mwi-gta-remote-token" type="password" autocomplete="off" placeholder="创建后自动保存">
           </label>
+          <label class="mwi-gta-field">粘贴管理备份
+            <textarea id="mwi-gta-connection-backup" class="mwi-gta-backup" spellcheck="false" placeholder="粘贴“复制管理备份”得到的内容"></textarea>
+          </label>
           <div class="mwi-gta-actions" style="margin:8px 0 12px">
             <button class="mwi-gta-btn" data-action="save">保存高级连接</button>
+            <button class="mwi-gta-btn" data-action="import-connection">恢复管理备份</button>
             <button class="mwi-gta-btn" data-action="remote-config">同步本周名单</button>
           </div>
         </details>
@@ -599,6 +617,9 @@
     bossProfiles: panel.querySelector("#mwi-gta-boss-profiles"),
     lifeCap: panel.querySelector("#mwi-gta-life-cap"),
     combatCap: panel.querySelector("#mwi-gta-combat-cap"),
+    minTank: panel.querySelector("#mwi-gta-min-tank"),
+    minHealer: panel.querySelector("#mwi-gta-min-healer"),
+    minDebuff: panel.querySelector("#mwi-gta-min-debuff"),
     replanAll: panel.querySelector("#mwi-gta-replan-all"),
     excludeSigned: panel.querySelector("#mwi-gta-exclude-signed"),
     simulatorName: panel.querySelector("#mwi-gta-simulator-name"),
@@ -613,6 +634,8 @@
     readiness: panel.querySelector("#mwi-gta-readiness"),
     smartAction: panel.querySelector("#mwi-gta-smart-action"),
     guildSetupStatus: panel.querySelector("#mwi-gta-guild-setup-status"),
+    connectionBackup: panel.querySelector("#mwi-gta-connection-backup"),
+    simulation: panel.querySelector("#mwi-gta-simulation"),
   };
 
   hydrateSettings();
@@ -684,10 +707,8 @@
     if (action === "online-mode") setOnlineMode();
     if (action === "copy-guild") copyGuildId();
     if (action === "copy-connection") copyConnectionBackup();
-    if (action === "scan") {
-      renderTrialSummary(readCurrentTrials(), true);
-      renderReadiness();
-    }
+    if (action === "import-connection") importConnectionBackup();
+    if (action === "scan") await scanTrialsWithNavigation();
     if (action === "members") importMembersFromPage();
     if (action === "profile") captureCurrentProfile();
     if (action === "read-simulator") readCompatibleSimulatorExport();
@@ -697,6 +718,7 @@
     if (action === "remote-publish") await publishRemotePlan();
     if (action === "plan") buildAndRenderPlan();
     if (action === "copy") copyPlan();
+    if (action === "simulate-trials") await simulateLatestCombatPlan();
     if (action === "save") saveSettings();
     if (action === "example") {
       el.csv.value = EXAMPLE_CSV;
@@ -727,6 +749,9 @@
     el.bossProfiles.value = state.bossProfilesJson;
     el.lifeCap.value = state.lifeCapacity;
     el.combatCap.value = state.combatCapacity;
+    el.minTank.value = state.combatMinTank;
+    el.minHealer.value = state.combatMinHealer;
+    el.minDebuff.value = state.combatMinDebuff;
     el.replanAll.checked = !!state.replanAll;
     el.excludeSigned.checked = !!state.excludeAlreadySigned;
     el.excludeSigned.disabled = !!state.replanAll;
@@ -744,6 +769,9 @@
     state.bossProfilesJson = el.bossProfiles.value.trim() || JSON.stringify(DEFAULT_BOSS_PROFILES, null, 2);
     state.lifeCapacity = clampNumber(el.lifeCap.value, 24);
     state.combatCapacity = clampNumber(el.combatCap.value, 48);
+    state.combatMinTank = clampMinimum(el.minTank.value);
+    state.combatMinHealer = clampMinimum(el.minHealer.value);
+    state.combatMinDebuff = clampMinimum(el.minDebuff.value);
     state.replanAll = el.replanAll.checked;
     state.excludeAlreadySigned = el.excludeSigned.checked;
     state.remoteEndpoint = el.remoteEndpoint.value.trim();
@@ -880,6 +908,31 @@
     copyText(JSON.stringify({ endpoint: state.remoteEndpoint, guildId: state.remoteGuildId, leaderToken: state.remoteLeaderToken }, null, 2), "管理备份已复制，其中包含管理密钥，请只交给可信会长。");
   }
 
+  function parseConnectionBackup(text) {
+    let data;
+    try { data = typeof text === "string" ? JSON.parse(text) : text; }
+    catch (_) { throw new Error("管理备份不是有效 JSON。"); }
+    const endpoint = String(data?.endpoint || "https://mwi-guild-trial-data.vercel.app").trim().replace(/\/+$/, "");
+    const guildId = String(data?.guildId || "").trim();
+    const leaderToken = String(data?.leaderToken || "").trim();
+    if (!/^https:\/\//i.test(endpoint)) throw new Error("管理备份中的服务地址无效。");
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(guildId)) throw new Error("管理备份中的公会编号无效。");
+    if (!leaderToken.startsWith(`g1.${guildId}.`)) throw new Error("管理备份中的管理密钥与公会编号不匹配。");
+    return { endpoint, guildId, leaderToken };
+  }
+
+  function importConnectionBackup() {
+    try {
+      const backup = parseConnectionBackup(el.connectionBackup.value);
+      el.remoteEndpoint.value = backup.endpoint;
+      applyGuildCredential(backup);
+      el.connectionBackup.value = "";
+      setStatus(`已恢复在线公会 ${backup.guildId}。`);
+    } catch (error) {
+      setStatus(`恢复管理备份失败：${error.message}`);
+    }
+  }
+
   async function remoteSetupApi(path, body, token) {
     const endpoint = (el.remoteEndpoint.value.trim() || DEFAULT_REMOTE_ENDPOINT).replace(/\/+$/, "");
     if (!/^https:\/\//i.test(endpoint)) throw new Error("服务地址必须使用 HTTPS。");
@@ -899,6 +952,66 @@
     const rememberedCount = currentTrialSnapshot.life.length + currentTrialSnapshot.combat.length;
     if (scannedCount > 0 && scannedCount >= rememberedCount) currentTrialSnapshot = scanned;
     return currentTrialSnapshot;
+  }
+
+  function selectGuildTrialNavigationTarget(candidates) {
+    const items = Array.from(candidates || []).filter((item) => item && (item.text || item.href));
+    const isTrial = (item) => {
+      const text = normalizeText(item.text);
+      const href = normalizeText(item.href);
+      return text.includes("公会试炼") || text.includes("guildtrial") || (href.includes("guild") && href.includes("trial"));
+    };
+    const direct = items.find(isTrial);
+    if (direct) return direct;
+    return items.find((item) => {
+      const text = normalizeText(item.text);
+      const href = normalizeText(item.href);
+      return text === "公会" || text === "guild" || href.endsWith("/guild") || href.includes("/guild/");
+    }) || null;
+  }
+
+  function readGuildNavigationCandidates() {
+    return Array.from(document.querySelectorAll("a, button, [role='button'], [role='tab']"))
+      .filter((node) => !node.closest("#mwi-gta-panel") && node.getClientRects().length > 0)
+      .map((element) => ({ element, text: (element.innerText || element.textContent || "").trim(), href: element.getAttribute("href") || "" }))
+      .filter((item) => item.text || item.href);
+  }
+
+  async function waitForValue(readValue, timeoutMs) {
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      const value = readValue();
+      if (value) return value;
+      await new Promise((resolve) => setTimeout(resolve, 150));
+    }
+    return null;
+  }
+
+  async function scanTrialsWithNavigation() {
+    let trials = scanPageTrials();
+    if (trials.life.length !== 4 || trials.combat.length !== 2) {
+      const firstTarget = selectGuildTrialNavigationTarget(readGuildNavigationCandidates());
+      if (firstTarget?.element) {
+        setStatus(firstTarget.text && normalizeText(firstTarget.text).includes("试炼") ? "正在进入公会试炼并读取数据……" : "正在进入公会页面……");
+        firstTarget.element.click();
+        if (!normalizeText(`${firstTarget.text} ${firstTarget.href}`).includes("trial") && !normalizeText(firstTarget.text).includes("试炼")) {
+          const trialTarget = await waitForValue(() => {
+            const target = selectGuildTrialNavigationTarget(readGuildNavigationCandidates());
+            return target && normalizeText(`${target.text} ${target.href}`).includes("trial") ? target : null;
+          }, 5000);
+          trialTarget?.element?.click();
+        }
+        const loaded = await waitForValue(() => {
+          const current = scanPageTrials();
+          return current.life.length === 4 && current.combat.length === 2 ? current : null;
+        }, 8000);
+        if (loaded) trials = loaded;
+        else trials = scanPageTrials();
+      }
+    }
+    if (trials.life.length + trials.combat.length > 0) currentTrialSnapshot = trials;
+    renderTrialSummary(readCurrentTrials(), true);
+    renderReadiness();
   }
 
   function resolveSmartAction(summary, workflow, remoteConfigured, hasPlan) {
@@ -983,7 +1096,7 @@
     const action = el.smartAction.dataset.nextAction || "scan";
     el.smartAction.disabled = true;
     try {
-      if (action === "scan") renderTrialSummary(readCurrentTrials(), true);
+      if (action === "scan") await scanTrialsWithNavigation();
       if (action === "members") importMembersFromPage();
       if (action === "setup") switchTab("settings");
       if (action === "remote-config") await syncRemoteConfig();
@@ -1519,6 +1632,167 @@
     return { ...record, name };
   }
 
+  function findTrialMonsterDetails(monsterMap, trial) {
+    const aliases = [trial?.key, trial?.zh, ...(trial?.aliases || [])].map(normalizeText).filter(Boolean);
+    return Object.entries(monsterMap || {})
+      .map(([hrid, detail]) => ({ ...(detail || {}), hrid: String(detail?.hrid || hrid) }))
+      .filter((detail) => {
+        const text = normalizeText(`${detail.hrid} ${detail.name || ""}`);
+        const isTrial = text.includes("trial") || text.includes("试炼");
+        return isTrial && aliases.some((alias) => text.includes(alias));
+      })
+      .sort((left, right) => left.hrid.localeCompare(right.hrid));
+  }
+
+  function buildTrialSimulationPlayer(member, profile, index) {
+    const raw = member?.raw || {};
+    const sourcePlayer = profile?.player || {};
+    const level = (name) => Math.max(1, Math.round(numberValue(sourcePlayer[name]) || numberValue(raw[name]) || 1));
+    const equipment = {};
+    (Array.isArray(sourcePlayer.equipment) ? sourcePlayer.equipment : []).forEach((item) => {
+      const location = String(item?.itemLocationHrid || "").replace("/item_locations/", "/equipment_types/");
+      const hrid = String(item?.itemHrid || item?.hrid || "");
+      if (location && hrid) equipment[location] = { hrid, enhancementLevel: Math.max(0, Math.round(numberValue(item?.enhancementLevel))) };
+    });
+    const triggerMap = profile?.triggerMap && typeof profile.triggerMap === "object" ? profile.triggerMap : {};
+    const abilities = (Array.isArray(profile?.abilities) ? profile.abilities : []).slice(0, 5).map((ability) => ({
+      hrid: String(ability?.abilityHrid || ability?.hrid || ""),
+      level: Math.max(1, Math.round(numberValue(ability?.level) || 1)),
+      triggers: (triggerMap[ability?.abilityHrid || ability?.hrid] || []).map((trigger) => ({
+        dependencyHrid: String(trigger?.dependencyHrid || ""),
+        conditionHrid: String(trigger?.conditionHrid || ""),
+        comparatorHrid: String(trigger?.comparatorHrid || ""),
+        value: numberValue(trigger?.value),
+      })),
+    })).filter((ability) => ability.hrid);
+    while (abilities.length < 5) abilities.push(null);
+    return {
+      hrid: `player${index}`,
+      staminaLevel: level("staminaLevel"),
+      intelligenceLevel: level("intelligenceLevel"),
+      attackLevel: level("attackLevel"),
+      meleeLevel: level("meleeLevel"),
+      defenseLevel: level("defenseLevel"),
+      rangedLevel: level("rangedLevel"),
+      magicLevel: level("magicLevel"),
+      equipment,
+      food: [null, null, null],
+      drinks: [null, null, null],
+      abilities,
+      houseRooms: { ...(profile?.houseRooms || {}) },
+      achievements: { ...(profile?.achievements || {}) },
+      debuffOnLevelGap: 0,
+    };
+  }
+
+  function readInitClientData() {
+    const stored = localStorage.getItem("initClientData");
+    if (!stored) throw new Error("游戏尚未缓存 initClientData，请刷新游戏后重试。");
+    let json = stored;
+    if (!stored.trim().startsWith("{")) {
+      if (typeof LZString === "undefined") throw new Error("怪物数据解压组件未加载，请刷新页面。");
+      json = LZString.decompressFromUTF16(stored);
+    }
+    const data = JSON.parse(json || "null");
+    if (!data?.combatMonsterDetailMap) throw new Error("initClientData 中没有 combatMonsterDetailMap。");
+    return data;
+  }
+
+  function trialSimulationDataMaps(clientData) {
+    return {
+      itemDetailMap: clientData.itemDetailMap || {},
+      abilityDetailMap: clientData.abilityDetailMap || {},
+      combatMonsterDetailMap: clientData.combatMonsterDetailMap || {},
+      houseRoomDetailMap: clientData.houseRoomDetailMap || {},
+      achievementDetailMap: clientData.achievementDetailMap || {},
+      achievementTierDetailMap: clientData.achievementTierDetailMap || {},
+      combatStyleDetailMap: clientData.combatStyleDetailMap || {},
+      combatTriggerDependencyDetailMap: clientData.combatTriggerDependencyDetailMap || {},
+      enhancementLevelTotalBonusMultiplierTable: clientData.enhancementLevelTotalBonusMultiplierTable || clientData.enhancementLevelTotalMultiplierTable || {},
+    };
+  }
+
+  async function loadTrialSimulationWorker() {
+    const response = await fetch(`${DEFAULT_REMOTE_ENDPOINT}/trial-worker.js?v=0.20.0`);
+    if (!response.ok) throw new Error(`模拟组件下载失败：HTTP ${response.status}`);
+    const url = URL.createObjectURL(await response.blob());
+    return { worker: new Worker(url), url };
+  }
+
+  async function runTrialSimulationWorker(payload) {
+    const { worker, url } = await loadTrialSimulationWorker();
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        worker.terminate();
+        URL.revokeObjectURL(url);
+        reject(new Error("模拟超过两分钟，已停止。"));
+      }, 120000);
+      worker.onmessage = (event) => {
+        if (!event.data || !["trial_simulation_result", "trial_simulation_error"].includes(event.data.type)) return;
+        clearTimeout(timeout);
+        worker.terminate();
+        URL.revokeObjectURL(url);
+        if (event.data.type === "trial_simulation_error") reject(new Error(event.data.error || "模拟失败"));
+        else resolve(event.data);
+      };
+      worker.onerror = (event) => {
+        clearTimeout(timeout);
+        worker.terminate();
+        URL.revokeObjectURL(url);
+        reject(new Error(event.message || "模拟组件运行失败"));
+      };
+      worker.postMessage(payload);
+    });
+  }
+
+  async function simulateLatestCombatPlan() {
+    try {
+      if (!latestPlan) throw new Error("请先生成分配方案。");
+      const clientData = readInitClientData();
+      const members = parseCsv(el.csv.value).map(normalizeMember).filter((member) => member.name);
+      const memberByName = new Map(members.map((member) => [normalizeText(member.name), member]));
+      const cache = readGuildLevelCache();
+      const jobs = latestPlan.combatAssignments.map((group) => {
+        const missing = [];
+        const players = group.members.map((assigned, index) => {
+          const key = normalizeText(assigned.name);
+          const member = memberByName.get(key);
+          const profile = cache[key]?.simulatorProfile;
+          if (!member || !profile || !Array.isArray(profile?.player?.equipment)) {
+            missing.push(assigned.name);
+            return null;
+          }
+          return buildTrialSimulationPlayer(member, profile, index + 1);
+        }).filter(Boolean);
+        const monsters = findTrialMonsterDetails(clientData.combatMonsterDetailMap, group.trial);
+        if (missing.length) throw new Error(`${group.trial.zh} 缺少完整配装：${missing.join("、")}`);
+        if (!players.length) throw new Error(`${group.trial.zh} 没有可模拟成员。`);
+        if (!monsters.length) throw new Error(`怪物表中未找到 ${group.trial.zh} 的 trial 条目。`);
+        return runTrialSimulationWorker({
+          type: "trial_simulation_start",
+          trialKey: group.trial.key,
+          trialName: group.trial.zh,
+          monsterHrids: monsters.map((monster) => monster.hrid),
+          players,
+          levels: Array.from({ length: 21 }, (_, index) => 100 + index * 10),
+          hpMultiplier: 1 + players.length * 0.01,
+          dataMaps: trialSimulationDataMaps(clientData),
+        });
+      });
+      setStatus("正在按本机最新怪物数据模拟两场战斗，请稍候……");
+      el.simulation.innerHTML = `<p class="mwi-gta-note">正在模拟……</p>`;
+      const results = await Promise.all(jobs);
+      el.simulation.innerHTML = results.map((result) => {
+        const rows = (result.results || []).map((item) => `<tr><td>Lv.${item.level}</td><td>${Math.round(item.winRate * 100)}%</td><td>${item.averageSeconds ? `${Math.round(item.averageSeconds)} 秒` : "-"}</td></tr>`).join("");
+        return `<h3 class="mwi-gta-setup-title">${escapeHtml(result.trialName)}模拟</h3><table class="mwi-gta-table"><thead><tr><th>层级</th><th>通过率</th><th>平均用时</th></tr></thead><tbody>${rows}</tbody></table>`;
+      }).join("");
+      setStatus("战斗模拟完成。每层最多模拟 1 小时并统计重复战斗，实际结果仍可能波动。");
+    } catch (error) {
+      el.simulation.innerHTML = `<p class="mwi-gta-warn">${escapeHtml(error.message)}</p>`;
+      setStatus(`模拟失败：${error.message}`);
+    }
+  }
+
   async function pullRemoteMembers() {
     try {
       saveSettings();
@@ -1748,6 +2022,11 @@
     const lifeAssignments = assignLifeByBestSkill(eligibleMembers, trials.life);
     const combatAssignments = assignCombatByGuildRules(eligibleMembers, trials.combat);
     decorateCombatAssignments(combatAssignments, eligibleMembers);
+    const roleWarnings = findCombatRoleWarnings(combatAssignments, eligibleMembers, {
+      tank: state.combatMinTank,
+      healer: state.combatMinHealer,
+      debuff: state.combatMinDebuff,
+    });
     latestPlan = {
       generatedAt: new Date().toLocaleString(),
       lifeAssignments,
@@ -1756,6 +2035,7 @@
       unassignedCombat: findUnassigned(eligibleMembers, combatAssignments),
       cancelLife: findSignupCancellations(eligibleMembers, lifeAssignments, "life"),
       cancelCombat: findSignupCancellations(eligibleMembers, combatAssignments, "combat"),
+      roleWarnings,
       trials,
     };
     renderPlan(latestPlan);
@@ -1929,10 +2209,14 @@
   }
 
   function assignCombatByGuildRules(members, trials) {
-    return assignCombatByBossProfiles(members, trials, readBossProfiles());
+    return assignCombatByBossProfiles(members, trials, readBossProfiles(), {
+      tank: clampMinimum(state.combatMinTank),
+      healer: clampMinimum(state.combatMinHealer),
+      debuff: clampMinimum(state.combatMinDebuff),
+    });
   }
 
-  function assignCombatByBossProfiles(members, trials, profiles) {
+  function assignCombatByBossProfiles(members, trials, profiles, minimums) {
     const buckets = new Map(trials.map((trial) => [trial.key, {
       trial,
       members: [],
@@ -1957,7 +2241,9 @@
       });
     });
 
-    const candidates = members.filter((member) => !fixedMembers.has(member)).map((member) => {
+    const reservedMembers = assignCombatRoleMinimums(members, buckets, trials, profiles, minimums, fixedMembers);
+
+    const candidates = members.filter((member) => !reservedMembers.has(member)).map((member) => {
       const scores = trials.map((trial) => ({
         trial,
         score: scoreCombatByProfile(member, trial, profiles[trial.key]),
@@ -1990,6 +2276,61 @@
     });
 
     return Array.from(buckets.values());
+  }
+
+  function memberMatchesCombatRole(member, role) {
+    if (role === "healer") return member?.role === "healer" && isNatureHealer(member);
+    return member?.role === role;
+  }
+
+  function assignCombatRoleMinimums(members, buckets, trials, profiles, minimums, initiallyAssigned) {
+    const assigned = new Set(initiallyAssigned || []);
+    const memberByName = new Map(members.map((member) => [member.name, member]));
+    const labels = { tank: "坦克", healer: "自然治疗", debuff: "减益" };
+    const roleCount = (bucket, role) => bucket.members.filter((item) => memberMatchesCombatRole(memberByName.get(item.name), role)).length;
+
+    ["tank", "healer", "debuff"].forEach((role) => {
+      const minimum = Math.max(0, Math.min(10, Math.round(Number(minimums?.[role]) || 0)));
+      while (minimum > 0) {
+        const targets = trials.map((trial) => buckets.get(trial.key))
+          .filter((bucket) => bucket && roleCount(bucket, role) < minimum)
+          .sort((left, right) => roleCount(left, role) - roleCount(right, role) || scaledGroupStrength(left) - scaledGroupStrength(right));
+        if (!targets.length) break;
+        let placed = false;
+        for (const bucket of targets) {
+          const candidate = members.filter((member) => !assigned.has(member) && memberMatchesCombatRole(member, role) && canJoinCombat(member, bucket))
+            .map((member) => ({ member, score: scoreCombatByProfile(member, bucket.trial, profiles[bucket.trial.key]) }))
+            .filter((item) => item.score > 0)
+            .sort((left, right) => right.score - left.score || left.member.name.localeCompare(right.member.name))[0];
+          if (!candidate) continue;
+          bucket.members.push({
+            name: candidate.member.name,
+            score: Math.round(candidate.score * 10) / 10,
+            note: [`${labels[role]}最低配置`, makeCombatProfileReason(candidate.member, bucket.trial, profiles[bucket.trial.key]), makeSignupChangeReason(candidate.member, bucket.trial, "combat")].filter(Boolean).join("、"),
+          });
+          assigned.add(candidate.member);
+          placed = true;
+          break;
+        }
+        if (!placed) break;
+      }
+    });
+    return assigned;
+  }
+
+  function findCombatRoleWarnings(groups, members, minimums) {
+    const memberByName = new Map(members.map((member) => [normalizeText(member.name), member]));
+    const labels = { tank: "坦克", healer: "治疗", debuff: "减益" };
+    const warnings = [];
+    (groups || []).forEach((group) => {
+      ["tank", "healer", "debuff"].forEach((role) => {
+        const minimum = Math.max(0, Math.min(10, Math.round(Number(minimums?.[role]) || 0)));
+        if (!minimum) return;
+        const count = (group.members || []).filter((item) => memberMatchesCombatRole(memberByName.get(normalizeText(item.name)), role)).length;
+        if (count < minimum) warnings.push(`${group.trial.zh}：${labels[role]} ${count}/${minimum}`);
+      });
+    });
+    return warnings;
   }
 
   function compareLeximinVectors(left, right) {
@@ -2278,13 +2619,15 @@
       <div class="mwi-gta-summary">
         <details><summary>生活未分配 ${plan.unassignedLife.length} 人</summary><p>${escapeHtml(plan.unassignedLife.join("、") || "无")}</p></details>
         <details><summary>战斗未分配 ${plan.unassignedCombat.length} 人</summary><p>${escapeHtml(plan.unassignedCombat.join("、") || "无")}</p></details>
+        ${plan.roleWarnings.length ? `<details open><summary>战斗职责缺口 ${plan.roleWarnings.length} 项</summary><p>${escapeHtml(plan.roleWarnings.join("；"))}</p></details>` : ""}
         ${(plan.cancelLife.length || plan.cancelCombat.length) ? `<details><summary>需要取消原报名</summary><p>生活：${escapeHtml(plan.cancelLife.join("、") || "无")}<br>战斗：${escapeHtml(plan.cancelCombat.join("、") || "无")}</p></details>` : ""}
       </div>
     `;
     const fallbackLife = plan.lifeAssignments.reduce((count, group) => count + group.members.filter((member) => member.note.includes("缺少生活评分")).length, 0);
     const fallback = fallbackLife ? `；生活兜底 ${fallbackLife} 人` : "";
     const combatSkipped = plan.unassignedCombat.length ? `；战斗未分配 ${plan.unassignedCombat.length} 人（缺少评分、缩放不足或名额已满）` : "";
-    setStatus(`已生成分配：${plan.generatedAt}${fallback}${combatSkipped}`);
+    const roleWarning = plan.roleWarnings.length ? `；战斗职责缺口 ${plan.roleWarnings.length} 项` : "";
+    setStatus(`已生成分配：${plan.generatedAt}${fallback}${combatSkipped}${roleWarning}`);
   }
 
   function renderAssignmentTable(title, groups) {
@@ -2333,6 +2676,7 @@
     const fallbackLife = plan.lifeAssignments.reduce((count, group) => count + group.members.filter((member) => String(member.note).includes("缺少生活评分")).length, 0);
     if (fallbackLife) lines.push(`提示：生活 ${fallbackLife} 人缺少评分，已按剩余名额均衡兜底。`, "");
     if (plan.unassignedCombat.length) lines.push(`提示：战斗 ${plan.unassignedCombat.length} 人因缺少评分、边际贡献不足或名额已满而未分配。`, "");
+    if (plan.roleWarnings.length) lines.push(`提示：战斗职责未满足：${plan.roleWarnings.join("；")}。`, "");
     lines.push("生活试炼");
     plan.lifeAssignments.forEach((group) => {
       const totalScore = group.members.reduce((sum, member) => sum + numberValue(member.score), 0);
@@ -2478,6 +2822,11 @@
     const num = Number(value);
     if (!Number.isFinite(num)) return fallback;
     return Math.min(200, Math.max(1, Math.round(num)));
+  }
+
+  function clampMinimum(value) {
+    const num = Number(value);
+    return Number.isFinite(num) ? Math.min(10, Math.max(0, Math.round(num))) : 0;
   }
 
   function normalizeText(text) {

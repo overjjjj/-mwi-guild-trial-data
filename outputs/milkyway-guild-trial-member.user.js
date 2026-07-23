@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Milky Way Idle 公会试炼会员端
 // @namespace    https://www.milkywayidle.com/
-// @version      0.7.0
+// @version      0.7.1
 // @description  按公会名单和角色名上传本角色的公会试炼资料，并显示个人适配和正式分配。
-// @author       Codex
+// @author       zc
 // @updateURL    https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-member.user.js
 // @downloadURL  https://raw.githubusercontent.com/overjjjj/-mwi-guild-trial-data/main/outputs/milkyway-guild-trial-member.user.js
 // @match        https://www.milkywayidle.com/*

@@ -3,6 +3,14 @@
   "installCommand": "",
   "buildCommand": null,
   "outputDirectory": null,
+  "headers": [
+    {
+      "source": "/trial-worker.js",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
+      ]
+    }
+  ],
   "rewrites": [
     {
       "source": "/v1/:path*",

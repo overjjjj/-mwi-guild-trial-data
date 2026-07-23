@@ -5,6 +5,7 @@ const vm = require("node:vm");
 
 const userscriptPath = path.join(__dirname, "milkyway-guild-trial-allocator.user.js");
 const source = fs.readFileSync(userscriptPath, "utf8");
+assert.match(source, /@author\s+zc/);
 for (const id of ["mwi-gta-remote-endpoint", "mwi-gta-remote-guild", "mwi-gta-remote-token"]) {
   assert.match(source, new RegExp(id));
 }
@@ -12,12 +13,16 @@ assert.equal(source.includes("mwi-gta-remote-output"), false, "member invite out
 assert.equal(source.includes('data-action="remote-invites"'), false, "member invite action should be removed");
 for (const action of ["remote-config", "remote-pull", "remote-publish"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
 assert.match(source, /@updateURL\s+https:\/\/raw\.githubusercontent\.com\/overjjjj\/-mwi-guild-trial-data\/main\/outputs\/milkyway-guild-trial-allocator\.user\.js/);
+assert.match(source, /data-action="simulate-trials"/);
+assert.match(source, /id="mwi-gta-simulation"/);
 assert.match(source, /id="mwi-gta-smart-action"/);
 assert.match(source, /id="mwi-gta-readiness"/);
 assert.match(source, /id="mwi-gta-issues-only"/);
 assert.match(source, /const DEFAULT_REMOTE_ENDPOINT = "https:\/\/mwi-guild-trial-data\.vercel\.app"/);
 assert.match(source, /id="mwi-gta-guild-setup"/);
+for (const id of ["mwi-gta-min-tank", "mwi-gta-min-healer", "mwi-gta-min-debuff", "mwi-gta-connection-backup"]) assert.match(source, new RegExp(`id=\\"${id}\\"`));
 for (const action of ["create-guild", "claim-guild", "local-mode", "online-mode", "copy-guild"]) assert.match(source, new RegExp(`data-action=\\"${action}\\"`));
+assert.match(source, /data-action="import-connection"/);
 
 function loadFunction(name, context = {}) {
   const marker = `function ${name}(`;
@@ -75,7 +80,21 @@ const formatAbilityName = loadFunction("formatAbilityName");
 const recommendCombatSkills = loadFunction("recommendCombatSkills", { formatAbilityName, normalizeText, memberWeaponType, abilityMatchesWeapon, isHealingAbility });
 const resolveSmartAction = loadFunction("resolveSmartAction");
 const resolveConnectionState = loadFunction("resolveConnectionState");
+const parseConnectionBackup = loadFunction("parseConnectionBackup");
+const selectGuildTrialNavigationTarget = loadFunction("selectGuildTrialNavigationTarget", { normalizeText });
+const findTrialMonsterDetails = loadFunction("findTrialMonsterDetails", { normalizeText });
+const buildTrialSimulationPlayer = loadFunction("buildTrialSimulationPlayer", { numberValue });
 const getMemberIssues = loadFunction("getMemberIssues", { memberWeaponType, normalizeText, numberValue });
+const memberMatchesCombatRole = loadFunction("memberMatchesCombatRole", { isNatureHealer });
+const assignCombatRoleMinimums = loadFunction("assignCombatRoleMinimums", {
+  memberMatchesCombatRole,
+  scoreCombatByProfile: (member, trial) => Number(member.raw[trial.key] || 0),
+  canJoinCombat: (_member, bucket) => hasTestCapacity(bucket),
+  scaledGroupStrength,
+  makeCombatProfileReason: () => "属性适配",
+  makeSignupChangeReason: () => "",
+});
+const findCombatRoleWarnings = loadFunction("findCombatRoleWarnings", { memberMatchesCombatRole, normalizeText });
 const hasTestCapacity = (bucket) => bucket && bucket.members.length < bucket.trial.capacity;
 const assignLifeByBestSkill = loadFunction("assignLifeByBestSkill", {
   scoreMember: (member, trial) => Number(member.raw[trial.key] || 0),
@@ -97,6 +116,7 @@ const assignCombatByBossProfiles = loadFunction("assignCombatByBossProfiles", {
   passesCombatScaling: () => true,
   chooseLeximinOption,
   scaledGroupStrength,
+  assignCombatRoleMinimums,
 });
 
 const exported = {
@@ -318,6 +338,64 @@ assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: 
 assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "local", remoteGuildId: "g-abc", remoteLeaderToken: "g1.g-abc.nonce.signature" }))), { mode: "local", canRestore: true, guildId: "g-abc" });
 assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "online", remoteGuildId: "g-abc", remoteLeaderToken: "g1.g-abc.nonce.signature" }))), { mode: "connected", guildId: "g-abc" });
 assert.deepEqual(JSON.parse(JSON.stringify(resolveConnectionState({ remoteMode: "online", remoteGuildId: "DaisyCamp", remoteLeaderToken: "legacy-secret" }))), { mode: "legacy", guildId: "DaisyCamp" });
+
+assert.deepEqual(JSON.parse(JSON.stringify(parseConnectionBackup(JSON.stringify({
+  endpoint: "https://mwi-guild-trial-data.vercel.app/",
+  guildId: "g-abc",
+  leaderToken: "g1.g-abc.nonce.signature",
+})))), {
+  endpoint: "https://mwi-guild-trial-data.vercel.app",
+  guildId: "g-abc",
+  leaderToken: "g1.g-abc.nonce.signature",
+});
+assert.throws(() => parseConnectionBackup('{"guildId":"g-abc","leaderToken":"g1.g-other.nonce.signature"}'), /管理密钥/);
+
+const navigationTarget = selectGuildTrialNavigationTarget([
+  { text: "公会", href: "/guild" },
+  { text: "公会试炼", href: "/guild/trials" },
+  { text: "个人试炼", href: "/character/trials" },
+]);
+assert.deepEqual(JSON.parse(JSON.stringify(navigationTarget)), { text: "公会试炼", href: "/guild/trials" });
+assert.deepEqual(JSON.parse(JSON.stringify(selectGuildTrialNavigationTarget([{ text: "公会", href: "/guild" }]))), { text: "公会", href: "/guild" });
+
+const trialMonsters = findTrialMonsterDetails({
+  "/monsters/badger": { hrid: "/monsters/badger", name: "Badger" },
+  "/monsters/guild_trial_badger": { hrid: "/monsters/guild_trial_badger", name: "Trial Badger" },
+  "/monsters/guild_trial_swarm_beetle": { hrid: "/monsters/guild_trial_swarm_beetle", name: "Trial Swarm Beetle" },
+}, { key: "badger", zh: "獾", aliases: ["Badger", "试炼獾"] });
+assert.deepEqual(JSON.parse(JSON.stringify(trialMonsters.map((monster) => monster.hrid))), ["/monsters/guild_trial_badger"]);
+
+const simulationPlayer = buildTrialSimulationPlayer(normalizeMember({
+  name: "NatureMage", staminaLevel: 120, intelligenceLevel: 130, attackLevel: 20,
+  meleeLevel: 20, defenseLevel: 115, rangedLevel: 10, magicLevel: 140,
+}), {
+  player: { equipment: [{ itemLocationHrid: "/item_locations/main_hand", itemHrid: "/items/nature_staff", enhancementLevel: 9 }] },
+  abilities: [{ abilityHrid: "/abilities/rejuvenate", level: 42 }],
+  triggerMap: { "/abilities/rejuvenate": [{ dependencyHrid: "/combat_trigger_dependencies/lowest_hp_ally", conditionHrid: "/combat_trigger_conditions/current_hp", comparatorHrid: "/combat_trigger_comparators/less_than_equal", value: 0.7 }] },
+  houseRooms: { "/house_rooms/observatory": 12 },
+}, 3);
+assert.equal(simulationPlayer.hrid, "player3");
+assert.equal(simulationPlayer.magicLevel, 140);
+assert.equal(simulationPlayer.equipment["/equipment_types/main_hand"].hrid, "/items/nature_staff");
+assert.equal(simulationPlayer.abilities[0].triggers[0].value, 0.7);
+assert.deepEqual(JSON.parse(JSON.stringify(simulationPlayer.food)), [null, null, null]);
+assert.deepEqual(JSON.parse(JSON.stringify(simulationPlayer.drinks)), [null, null, null]);
+
+const roleTrials = [{ key: "alpha", zh: "甲", capacity: 10 }, { key: "beta", zh: "乙", capacity: 10 }];
+const roleBuckets = new Map(roleTrials.map((trial) => [trial.key, { trial, members: [], fairnessActive: true }]));
+const roleMembers = [
+  normalizeMember({ name: "TankA", role: "tank", alpha: 90, beta: 20 }),
+  normalizeMember({ name: "TankB", role: "tank", alpha: 30, beta: 85 }),
+  normalizeMember({ name: "HealA", role: "healer", weaponType: "nature", healer: 80, alpha: 80, beta: 25 }),
+  normalizeMember({ name: "HealB", role: "healer", weaponType: "nature", healer: 82, alpha: 20, beta: 82 }),
+  normalizeMember({ name: "DebuffA", role: "debuff", alpha: 75, beta: 20 }),
+  normalizeMember({ name: "DebuffB", role: "debuff", alpha: 20, beta: 78 }),
+];
+const roleAssigned = assignCombatRoleMinimums(roleMembers, roleBuckets, roleTrials, {}, { tank: 1, healer: 1, debuff: 1 }, new Set());
+assert.equal(roleAssigned.size, 6);
+assert.deepEqual([...roleBuckets.values()].map((bucket) => bucket.members.length), [3, 3]);
+assert.equal([...roleBuckets.values()].every((bucket) => bucket.members.every((member) => /最低配置/.test(member.note))), true);
+assert.deepEqual(JSON.parse(JSON.stringify(findCombatRoleWarnings([...roleBuckets.values()], roleMembers.filter((member) => member.name !== "HealB"), { tank: 1, healer: 1, debuff: 1 }))), ["乙：治疗 0/1"]);
 
 const issueTrials = { combat: [{ key: "swarm", zh: "虫群" }] };
 const incompleteIssues = getMemberIssues(normalizeMember({ name: "Missing" }), issueTrials, null, [], false);

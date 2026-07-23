@@ -2,8 +2,8 @@
 
 适用版本：
 
-- 会长端 `milkyway-guild-trial-allocator.user.js` v0.13.0
-- 会员端 `milkyway-guild-trial-member.user.js` v0.3.0
+- 会长端 `milkyway-guild-trial-allocator.user.js` v0.20.0
+- 会员端 `milkyway-guild-trial-member.user.js` v0.7.1
 - 远程服务 `https://mwi-guild-trial-data.vercel.app`
 
 ## 1. 功能范围
