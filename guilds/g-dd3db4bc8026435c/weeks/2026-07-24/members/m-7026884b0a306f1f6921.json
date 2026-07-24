@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-dd3db4bc8026435c",
+  "memberId": "m-7026884b0a306f1f6921",
+  "name": "Aspen8925",
+  "updatedAt": "2026-07-24T05:23:44.493Z",
+  "values": {
+    "level": 3500,
+    "combatLevel": 138,
+    "combat": 138,
+    "attackLevel": 135,
+    "defenseLevel": 130,
+    "meleeLevel": 40,
+    "rangedLevel": 25,
+    "magicLevel": 143,
+    "staminaLevel": 130,
+    "intelligenceLevel": 130,
+    "weaponType": "fire",
+    "damageType": "magic",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 12,
+    "abilityCount": 5,
+    "maxAbilityLevel": 77,
+    "combatHouseLevelSum": 39,
+    "aoe": 71,
+    "single": 77,
+    "magic": 143
+  },
+  "lifeSkills": {
+    "milking": 102,
+    "foraging": 100,
+    "woodcutting": 99,
+    "cheesesmithing": 98,
+    "crafting": 99,
+    "tailoring": 98,
+    "cooking": 123,
+    "brewing": 100,
+    "alchemy": 102,
+    "enhancing": 96
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak_refined",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blazing_trident_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_fire_robe_top_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_fire_robe_bottoms_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/master_magic_charm",
+      "enhancementLevel": 5
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/mystic_aura",
+      "level": 51
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 71
+    },
+    {
+      "abilityHrid": "/abilities/smoke_burst",
+      "level": 60
+    },
+    {
+      "abilityHrid": "/abilities/flame_blast",
+      "level": 71
+    },
+    {
+      "abilityHrid": "/abilities/fireball",
+      "level": 77
+    }
+  ],
+  "triggerMap": {
+    "/abilities/elemental_affinity": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 800
+      }
+    ],
+    "/abilities/fireball": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/flame_blast": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1300
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_dead_units",
+        "comparatorHrid": "/combat_trigger_comparators/less_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/mystic_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/mystic_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 3,
+    "/house_rooms/armory": 5,
+    "/house_rooms/brewery": 4,
+    "/house_rooms/dairy_barn": 4,
+    "/house_rooms/dining_room": 7,
+    "/house_rooms/dojo": 6,
+    "/house_rooms/forge": 4,
+    "/house_rooms/garden": 4,
+    "/house_rooms/gym": 3,
+    "/house_rooms/kitchen": 5,
+    "/house_rooms/laboratory": 5,
+    "/house_rooms/library": 7,
+    "/house_rooms/log_shed": 4,
+    "/house_rooms/mystical_study": 8,
+    "/house_rooms/observatory": 5,
+    "/house_rooms/sewing_parlor": 4,
+    "/house_rooms/workshop": 4
+  }
+}
