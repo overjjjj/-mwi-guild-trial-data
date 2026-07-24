@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "memberId": "m-61d2f8bcb51ab4e36497",
+  "name": "Maik0",
+  "updatedAt": "2026-07-24T15:19:40.580Z",
+  "values": {
+    "level": 3502,
+    "combatLevel": 142,
+    "combat": 142,
+    "attackLevel": 133,
+    "defenseLevel": 130,
+    "meleeLevel": 38,
+    "rangedLevel": 94,
+    "magicLevel": 151,
+    "staminaLevel": 130,
+    "intelligenceLevel": 130,
+    "weaponType": "water",
+    "damageType": "magic",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 14,
+    "abilityCount": 5,
+    "maxAbilityLevel": 80,
+    "combatHouseLevelSum": 31,
+    "aoe": 80,
+    "support": 40,
+    "magic": 151
+  },
+  "lifeSkills": {
+    "milking": 87,
+    "foraging": 88,
+    "woodcutting": 85,
+    "cheesesmithing": 89,
+    "crafting": 117,
+    "tailoring": 106,
+    "cooking": 92,
+    "brewing": 107,
+    "alchemy": 90,
+    "enhancing": 84
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 6
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_water_robe_top_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_water_robe_bottoms_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak_refined",
+      "enhancementLevel": 4
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/rippling_trident_refined",
+      "enhancementLevel": 14
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/expert_attack_charm",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 14
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 7
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/critical_aura",
+      "level": 40
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 70
+    },
+    {
+      "abilityHrid": "/abilities/frost_surge",
+      "level": 77
+    },
+    {
+      "abilityHrid": "/abilities/mana_spring",
+      "level": 80
+    },
+    {
+      "abilityHrid": "/abilities/water_strike",
+      "level": 80
+    }
+  ],
+  "triggerMap": {
+    "/abilities/critical_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/critical_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/elemental_affinity": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/elemental_affinity",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 800
+      }
+    ],
+    "/abilities/frost_surge": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_dead_units",
+        "comparatorHrid": "/combat_trigger_comparators/less_than_equal",
+        "value": 1
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1400
+      }
+    ],
+    "/abilities/mana_spring": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_dead_units",
+        "comparatorHrid": "/combat_trigger_comparators/less_than_equal",
+        "value": 1
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1700
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 2,
+    "/house_rooms/armory": 5,
+    "/house_rooms/brewery": 2,
+    "/house_rooms/dairy_barn": 2,
+    "/house_rooms/dining_room": 5,
+    "/house_rooms/dojo": 6,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 2,
+    "/house_rooms/gym": 2,
+    "/house_rooms/kitchen": 2,
+    "/house_rooms/laboratory": 2,
+    "/house_rooms/library": 5,
+    "/house_rooms/log_shed": 2,
+    "/house_rooms/mystical_study": 6,
+    "/house_rooms/observatory": 2,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 2
+  }
+}
