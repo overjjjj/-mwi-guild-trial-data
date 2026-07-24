@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-dd3db4bc8026435c",
+  "weekId": "2026-07-24",
+  "generatedAt": "2026/7/24 13:01:47",
+  "publishedAt": "2026-07-24T05:02:33.344Z",
+  "members": {
+    "m-a44d8e6cad602dbde69d": {
+      "name": "shenhuanjie1024",
+      "life": {
+        "trialKey": "cheesesmithing",
+        "trialName": "炼金",
+        "score": 100,
+        "reason": "均衡分配、新报名",
+        "skills": []
+      },
+      "combat": {
+        "trialKey": "hedgehog",
+        "trialName": "刺猬",
+        "score": 59.6,
+        "reason": "法系适配、均衡分配、人数缩放通过、新报名",
+        "skills": [
+          "火球术 53级",
+          "guardian aura 10级",
+          "firestorm 53级"
+        ]
+      }
+    }
+  }
+}
