@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "memberId": "m-043e65354f4989401152",
+  "name": "YunQue",
+  "updatedAt": "2026-07-24T22:51:00.209Z",
+  "values": {
+    "level": 3694,
+    "combatLevel": 142,
+    "combat": 142,
+    "attackLevel": 130,
+    "defenseLevel": 150,
+    "meleeLevel": 142,
+    "rangedLevel": 86,
+    "magicLevel": 85,
+    "staminaLevel": 125,
+    "intelligenceLevel": 125,
+    "weaponType": "bulwark",
+    "damageType": "physical",
+    "equipmentCount": 13,
+    "combatEquipmentCount": 13,
+    "maxEnhancement": 14,
+    "abilityCount": 5,
+    "maxAbilityLevel": 83,
+    "combatHouseLevelSum": 34,
+    "aoe": 81,
+    "physical": 142,
+    "role": "tank"
+  },
+  "lifeSkills": {
+    "milking": 98,
+    "foraging": 88,
+    "woodcutting": 102,
+    "cheesesmithing": 110,
+    "crafting": 114,
+    "tailoring": 102,
+    "cooking": 91,
+    "brewing": 104,
+    "alchemy": 93,
+    "enhancing": 102
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/grandmaster_defense_charm",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/dodocamel_gauntlets_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/corsair_helmet_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/anchorbound_plate_legs_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/sinister_cape_refined",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathbreaker_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/anchorbound_plate_body_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/two_hand",
+      "itemHrid": "/items/griffin_bulwark_refined",
+      "enhancementLevel": 14
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/invincible",
+      "level": 40
+    },
+    {
+      "abilityHrid": "/abilities/toughness",
+      "level": 80
+    },
+    {
+      "abilityHrid": "/abilities/spike_shell",
+      "level": 80
+    },
+    {
+      "abilityHrid": "/abilities/retribution",
+      "level": 83
+    },
+    {
+      "abilityHrid": "/abilities/fracturing_impact",
+      "level": 81
+    }
+  ],
+  "triggerMap": {
+    "/abilities/fracturing_impact": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1500
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/current_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 400
+      }
+    ],
+    "/abilities/invincible": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/spike_shell",
+        "comparatorHrid": "/combat_trigger_comparators/is_active",
+        "value": 0
+      }
+    ],
+    "/abilities/retribution": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/retribution",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/current_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 300
+      }
+    ],
+    "/abilities/spike_shell": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/spike_shell",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/toughness": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/toughness",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 1,
+    "/house_rooms/armory": 8,
+    "/house_rooms/brewery": 2,
+    "/house_rooms/dairy_barn": 2,
+    "/house_rooms/dining_room": 4,
+    "/house_rooms/dojo": 6,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 1,
+    "/house_rooms/gym": 6,
+    "/house_rooms/kitchen": 1,
+    "/house_rooms/laboratory": 2,
+    "/house_rooms/library": 8,
+    "/house_rooms/log_shed": 2,
+    "/house_rooms/mystical_study": 1,
+    "/house_rooms/observatory": 4,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 2
+  }
+}
