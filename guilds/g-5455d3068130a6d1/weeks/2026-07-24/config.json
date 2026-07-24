@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-5455d3068130a6d1",
+  "weekId": "2026-07-24",
+  "updatedAt": "2026-07-24T04:50:06.256Z",
+  "lifeTrials": [
+    {
+      "key": "milking",
+      "zh": "挤奶",
+      "capacity": 22,
+      "signed": 10
+    },
+    {
+      "key": "woodcutting",
+      "zh": "伐木",
+      "capacity": 22,
+      "signed": 1
+    },
+    {
+      "key": "cheesesmithing",
+      "zh": "炼金",
+      "capacity": 22,
+      "signed": 5
+    },
+    {
+      "key": "crafting",
+      "zh": "制作",
+      "capacity": 22,
+      "signed": 15
+    }
+  ],
+  "combatTrials": [
+    {
+      "key": "jellyfish",
+      "zh": "水母",
+      "capacity": 44,
+      "signed": 14
+    },
+    {
+      "key": "hedgehog",
+      "zh": "刺猬",
+      "capacity": 44,
+      "signed": 18
+    }
+  ],
+  "memberNames": [
+    "DDDestiny",
+    "shenhuanjie",
+    "bw2012",
+    "niubiao",
+    "Nang",
+    "RERoger",
+    "sloanlee",
+    "Cong5",
+    "aurora1224",
+    "XGZ",
+    "vizia",
+    "miresama",
+    "Reimu000",
+    "yimoran",
+    "outisder",
+    "liuwenjun",
+    "joejoequte",
+    "doghua",
+    "Mono233",
+    "otomo",
+    "LIDAshi",
+    "Asfreeodm",
+    "JIANGNANNNNNN",
+    "niunaizhanshen",
+    "sweet1113",
+    "RedSonic",
+    "buzCat",
+    "ShangYe7",
+    "taotao3178",
+    "nyyy",
+    "octopuseileen",
+    "FSTKS",
+    "Pitaya0769",
+    "MerryFaCai",
+    "Huangmaooo",
+    "Aspen8925",
+    "aqaqas",
+    "koakuma23",
+    "202588",
+    "France123",
+    "capsmo",
+    "OgeNB",
+    "Iama250",
+    "niufengle",
+    "xjsmh",
+    "lh66",
+    "Opone",
+    "YanMY",
+    "RSDZ",
+    "Fai062",
+    "yorshka123",
+    "cidada",
+    "obole",
+    "shayvmo",
+    "wcccctv",
+    "Milkzilla",
+    "diao0mao",
+    "GoodBruce",
+    "NewRabbit",
+    "QQOO00OOQQ",
+    "ZhangMuZhi",
+    "lichseer",
+    "scary087",
+    "PoppinParty",
+    "AAAAkira",
+    "DariusZack",
+    "kakk",
+    "shenhuanjie1024",
+    "shenhuanjie1025"
+  ],
+  "bossProfiles": {
+    "badger": {
+      "label": "magic-single-low-evasion",
+      "weights": {
+        "magic": 1.7,
+        "single": 1.25,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.55,
+        "support": 0.3,
+        "physical": 0.2
+      },
+      "tags": [
+        "single",
+        "magic",
+        "low-magic-evasion"
+      ]
+    },
+    "chameleon": {
+      "label": "physical-single",
+      "weights": {
+        "physical": 1.35,
+        "single": 1,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.4,
+        "support": 0.3
+      },
+      "tags": [
+        "single",
+        "physical"
+      ]
+    },
+    "jellyfish": {
+      "label": "magic-sustain",
+      "weights": {
+        "magic": 1,
+        "single": 0.75,
+        "healer": 0.9,
+        "sustain": 0.9,
+        "support": 0.7,
+        "tank": 0.45
+      },
+      "tags": [
+        "magic",
+        "sustain",
+        "support"
+      ]
+    },
+    "hedgehog": {
+      "label": "magic-single",
+      "weights": {
+        "magic": 1.35,
+        "single": 1,
+        "healer": 0.75,
+        "sustain": 0.65,
+        "tank": 0.45,
+        "support": 0.4
+      },
+      "tags": [
+        "single",
+        "magic"
+      ]
+    },
+    "swarm": {
+      "label": "aoe-mixed-four-targets",
+      "weights": {
+        "aoe": 1.8,
+        "magic": 1,
+        "blunt": 0.85,
+        "ranged": 0.75,
+        "stab": 0.7,
+        "slash": 0.7,
+        "physical": 0.55,
+        "healer": 0.85,
+        "tank": 0.8,
+        "support": 0.8,
+        "sustain": 0.75
+      },
+      "tags": [
+        "aoe",
+        "mixed-damage",
+        "four-targets",
+        "sustain",
+        "support"
+      ]
+    }
+  }
+}
