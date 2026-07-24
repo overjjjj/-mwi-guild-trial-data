@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "weekId": "2026-07-24",
+  "updatedAt": "2026-07-24T15:17:24.131Z",
+  "lifeTrials": [
+    {
+      "key": "milking",
+      "zh": "挤奶",
+      "capacity": 24,
+      "signed": 14
+    },
+    {
+      "key": "woodcutting",
+      "zh": "伐木",
+      "capacity": 24,
+      "signed": 13
+    },
+    {
+      "key": "cheesesmithing",
+      "zh": "炼金",
+      "capacity": 24,
+      "signed": 24
+    },
+    {
+      "key": "crafting",
+      "zh": "制作",
+      "capacity": 24,
+      "signed": 24
+    }
+  ],
+  "combatTrials": [
+    {
+      "key": "jellyfish",
+      "zh": "水母",
+      "capacity": 44,
+      "signed": 41
+    },
+    {
+      "key": "hedgehog",
+      "zh": "刺猬",
+      "capacity": 44,
+      "signed": 34
+    }
+  ],
+  "memberNames": [
+    "HugePaint",
+    "baimucheng01",
+    "tincent168",
+    "Yukiiiiiiiiiiiii",
+    "FarZhao",
+    "braveniuniu",
+    "godpig321",
+    "Liufeng",
+    "msapostle",
+    "Miyati",
+    "linkiberty",
+    "YunQue",
+    "anhuan",
+    "goldhand520",
+    "graceH",
+    "remileon",
+    "E1Guason",
+    "violet4",
+    "love1707",
+    "Gtt001Cang",
+    "wsdjb",
+    "GgGZQ",
+    "braveniuniu2",
+    "DFWILL",
+    "CunrenB",
+    "xingkong",
+    "NightChange",
+    "ricccck",
+    "yuanbai",
+    "bowsun",
+    "lannya7",
+    "shiro11",
+    "tcNop",
+    "hengge",
+    "Cowmander",
+    "LAPAa",
+    "llllllcf",
+    "J117",
+    "Viserys",
+    "laobai31051",
+    "dan",
+    "XBR",
+    "wuwuwuwu123",
+    "e2yn",
+    "Fujwp",
+    "wulan",
+    "loveli",
+    "okcat",
+    "lryzqj",
+    "carp",
+    "gavin96",
+    "NNoneghost",
+    "Siumuk",
+    "wuqing",
+    "Licht",
+    "Cankymow",
+    "OAE0111",
+    "tiger189",
+    "yjydn",
+    "xiaolongxia",
+    "BiscuitKing",
+    "Louki6",
+    "Fz109",
+    "ho",
+    "KUKUx",
+    "siyuuuu",
+    "neko124",
+    "yun666",
+    "Altrouge",
+    "Maik0",
+    "Marin77",
+    "kanrethad",
+    "502y",
+    "pony892293",
+    "KrsAkira",
+    "Hentaitai",
+    "JSNHK",
+    "yooooooooooo",
+    "Evanescence",
+    "chen1991",
+    "WanwanErHao",
+    "FluoriteEye",
+    "liuyanduanhong",
+    "MMking",
+    "Qinjj",
+    "PaoPaoXiGua",
+    "5566166",
+    "Eumenidessss",
+    "kaopuless",
+    "GeeK93",
+    "cow5341375",
+    "AhuaX1C",
+    "mudi",
+    "FDDDD1",
+    "godhoxi",
+    "L0033",
+    "xxGxx"
+  ],
+  "bossProfiles": {
+    "badger": {
+      "label": "magic-single-low-evasion",
+      "weights": {
+        "magic": 1.7,
+        "single": 1.25,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.55,
+        "support": 0.3,
+        "physical": 0.2
+      },
+      "tags": [
+        "single",
+        "magic",
+        "low-magic-evasion"
+      ]
+    },
+    "chameleon": {
+      "label": "physical-single",
+      "weights": {
+        "physical": 1.35,
+        "single": 1,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.4,
+        "support": 0.3
+      },
+      "tags": [
+        "single",
+        "physical"
+      ]
+    },
+    "jellyfish": {
+      "label": "magic-sustain",
+      "weights": {
+        "magic": 1,
+        "single": 0.75,
+        "healer": 0.9,
+        "sustain": 0.9,
+        "support": 0.7,
+        "tank": 0.45
+      },
+      "tags": [
+        "magic",
+        "sustain",
+        "support"
+      ]
+    },
+    "hedgehog": {
+      "label": "magic-single",
+      "weights": {
+        "magic": 1.35,
+        "single": 1,
+        "healer": 0.75,
+        "sustain": 0.65,
+        "tank": 0.45,
+        "support": 0.4
+      },
+      "tags": [
+        "single",
+        "magic"
+      ]
+    },
+    "swarm": {
+      "label": "aoe-mixed-four-targets",
+      "weights": {
+        "aoe": 1.8,
+        "magic": 1,
+        "blunt": 0.85,
+        "ranged": 0.75,
+        "stab": 0.7,
+        "slash": 0.7,
+        "physical": 0.55,
+        "healer": 0.85,
+        "tank": 0.8,
+        "support": 0.8,
+        "sustain": 0.75
+      },
+      "tags": [
+        "aoe",
+        "mixed-damage",
+        "four-targets",
+        "sustain",
+        "support"
+      ]
+    }
+  }
+}
