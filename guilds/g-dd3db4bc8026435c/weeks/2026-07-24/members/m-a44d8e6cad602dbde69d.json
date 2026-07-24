@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-dd3db4bc8026435c",
+  "memberId": "m-a44d8e6cad602dbde69d",
+  "name": "shenhuanjie1024",
+  "updatedAt": "2026-07-24T04:57:29.244Z",
+  "values": {
+    "level": 2566,
+    "combatLevel": 110,
+    "combat": 110,
+    "attackLevel": 96,
+    "defenseLevel": 96,
+    "meleeLevel": 7,
+    "rangedLevel": 8,
+    "magicLevel": 118,
+    "staminaLevel": 101,
+    "intelligenceLevel": 107,
+    "weaponType": "fire",
+    "damageType": "magic",
+    "equipmentCount": 8,
+    "combatEquipmentCount": 8,
+    "maxEnhancement": 10,
+    "abilityCount": 5,
+    "maxAbilityLevel": 53,
+    "aoe": 53,
+    "single": 53,
+    "support": 10,
+    "magic": 118
+  },
+  "lifeSkills": {
+    "milking": 100,
+    "foraging": 102,
+    "woodcutting": 100,
+    "cheesesmithing": 100,
+    "crafting": 100,
+    "tailoring": 85,
+    "cooking": 100,
+    "brewing": 1,
+    "alchemy": 61,
+    "enhancing": 1
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/sorcerer_boots",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blazing_trident",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/ring_of_gathering",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/giant_pouch",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_fire_robe_top",
+      "enhancementLevel": 7
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/guardian_aura",
+      "level": 10
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 31
+    },
+    {
+      "abilityHrid": "/abilities/flame_blast",
+      "level": 51
+    },
+    {
+      "abilityHrid": "/abilities/firestorm",
+      "level": 53
+    },
+    {
+      "abilityHrid": "/abilities/fireball",
+      "level": 53
+    }
+  ],
+  "triggerMap": {
+    "/abilities/elemental_affinity": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/elemental_affinity",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/current_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 300
+      }
+    ],
+    "/abilities/fireball": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/firestorm": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 2
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/flame_blast": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 2
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/guardian_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/guardian_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/kitchen": 3
+  }
+}
