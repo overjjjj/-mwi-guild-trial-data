@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "memberId": "m-e26798d2ab02faf721bb",
+  "name": "JSNHK",
+  "updatedAt": "2026-07-25T08:04:28.189Z",
+  "values": {
+    "level": 2796,
+    "combatLevel": 136,
+    "combat": 136,
+    "attackLevel": 143,
+    "defenseLevel": 136,
+    "meleeLevel": 1,
+    "rangedLevel": 1,
+    "magicLevel": 142,
+    "staminaLevel": 120,
+    "intelligenceLevel": 111,
+    "weaponType": "nature",
+    "damageType": "magic",
+    "equipmentCount": 13,
+    "combatEquipmentCount": 13,
+    "maxEnhancement": 12,
+    "abilityCount": 5,
+    "maxAbilityLevel": 73,
+    "combatHouseLevelSum": 15,
+    "aoe": 64,
+    "single": 73,
+    "support": 63,
+    "magic": 142
+  },
+  "lifeSkills": {
+    "milking": 99,
+    "foraging": 65,
+    "woodcutting": 75,
+    "cheesesmithing": 66,
+    "crafting": 82,
+    "tailoring": 63,
+    "cooking": 79,
+    "brewing": 82,
+    "alchemy": 61,
+    "enhancing": 72
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_nature_robe_bottoms_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blooming_trident_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/master_magic_charm",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak",
+      "enhancementLevel": 3
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_nature_robe_top_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 5
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/speed_aura",
+      "level": 35
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 63
+    },
+    {
+      "abilityHrid": "/abilities/toxic_pollen",
+      "level": 64
+    },
+    {
+      "abilityHrid": "/abilities/natures_veil",
+      "level": 63
+    },
+    {
+      "abilityHrid": "/abilities/entangle",
+      "level": 73
+    }
+  ],
+  "triggerMap": {
+    "/abilities/elemental_affinity": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/elemental_affinity",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/entangle": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/natures_veil": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1200
+      }
+    ],
+    "/abilities/speed_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/speed_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/toxic_pollen": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1200
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 1,
+    "/house_rooms/armory": 2,
+    "/house_rooms/brewery": 1,
+    "/house_rooms/dairy_barn": 2,
+    "/house_rooms/dining_room": 2,
+    "/house_rooms/dojo": 4,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 1,
+    "/house_rooms/gym": 1,
+    "/house_rooms/kitchen": 1,
+    "/house_rooms/laboratory": 1,
+    "/house_rooms/library": 2,
+    "/house_rooms/log_shed": 1,
+    "/house_rooms/mystical_study": 3,
+    "/house_rooms/observatory": 1,
+    "/house_rooms/sewing_parlor": 1,
+    "/house_rooms/workshop": 1
+  }
+}
