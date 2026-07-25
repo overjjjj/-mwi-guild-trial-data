@@ -3,7 +3,7 @@
   "guildId": "g-4178a53856334652",
   "memberId": "m-61d2f8bcb51ab4e36497",
   "name": "Maik0",
-  "updatedAt": "2026-07-24T15:19:40.580Z",
+  "updatedAt": "2026-07-25T07:04:50.379Z",
   "values": {
     "level": 3502,
     "combatLevel": 142,
@@ -41,41 +41,6 @@
   },
   "equipment": [
     {
-      "itemLocationHrid": "/item_locations/off_hand",
-      "itemHrid": "/items/bishops_codex_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/pouch",
-      "itemHrid": "/items/guzzling_pouch",
-      "enhancementLevel": 6
-    },
-    {
-      "itemLocationHrid": "/item_locations/ring",
-      "itemHrid": "/items/philosophers_ring",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/earrings",
-      "itemHrid": "/items/philosophers_earrings",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/body",
-      "itemHrid": "/items/royal_water_robe_top_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/legs",
-      "itemHrid": "/items/royal_water_robe_bottoms_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/head",
-      "itemHrid": "/items/magicians_hat_refined",
-      "enhancementLevel": 12
-    },
-    {
       "itemLocationHrid": "/item_locations/trinket",
       "itemHrid": "/items/expert_task_badge",
       "enhancementLevel": 1
@@ -109,6 +74,41 @@
       "itemLocationHrid": "/item_locations/neck",
       "itemHrid": "/items/philosophers_necklace",
       "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 6
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_water_robe_top_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_water_robe_bottoms_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
+      "enhancementLevel": 12
     }
   ],
   "abilities": [
