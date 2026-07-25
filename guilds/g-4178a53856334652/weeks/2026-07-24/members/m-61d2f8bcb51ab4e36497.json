@@ -3,7 +3,7 @@
   "guildId": "g-4178a53856334652",
   "memberId": "m-61d2f8bcb51ab4e36497",
   "name": "Maik0",
-  "updatedAt": "2026-07-25T07:04:50.379Z",
+  "updatedAt": "2026-07-25T07:04:50.418Z",
   "values": {
     "level": 3502,
     "combatLevel": 142,
@@ -41,41 +41,6 @@
   },
   "equipment": [
     {
-      "itemLocationHrid": "/item_locations/trinket",
-      "itemHrid": "/items/expert_task_badge",
-      "enhancementLevel": 1
-    },
-    {
-      "itemLocationHrid": "/item_locations/back",
-      "itemHrid": "/items/enchanted_cloak_refined",
-      "enhancementLevel": 4
-    },
-    {
-      "itemLocationHrid": "/item_locations/main_hand",
-      "itemHrid": "/items/rippling_trident_refined",
-      "enhancementLevel": 14
-    },
-    {
-      "itemLocationHrid": "/item_locations/charm",
-      "itemHrid": "/items/expert_attack_charm",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/hands",
-      "itemHrid": "/items/chrono_gloves",
-      "enhancementLevel": 14
-    },
-    {
-      "itemLocationHrid": "/item_locations/feet",
-      "itemHrid": "/items/pathseeker_boots_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/neck",
-      "itemHrid": "/items/philosophers_necklace",
-      "enhancementLevel": 7
-    },
-    {
       "itemLocationHrid": "/item_locations/off_hand",
       "itemHrid": "/items/bishops_codex_refined",
       "enhancementLevel": 12
@@ -109,6 +74,41 @@
       "itemLocationHrid": "/item_locations/head",
       "itemHrid": "/items/magicians_hat_refined",
       "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak_refined",
+      "enhancementLevel": 4
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/rippling_trident_refined",
+      "enhancementLevel": 14
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/expert_attack_charm",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 14
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 7
     }
   ],
   "abilities": [
