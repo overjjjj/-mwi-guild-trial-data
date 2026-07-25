@@ -2,7 +2,50 @@
   "schemaVersion": 1,
   "guildId": "DaisyCamp",
   "weekId": "2026-07-24",
-  "generatedAt": "2026/7/24 09:39:22",
-  "publishedAt": "2026-07-24T01:39:26.308Z",
-  "members": {}
+  "generatedAt": "2026/7/26 01:16:01",
+  "publishedAt": "2026-07-25T17:16:15.468Z",
+  "members": {
+    "m-7cabebdc094cc5b581d5": {
+      "name": "Linarna",
+      "life": {
+        "trialKey": "cheesesmithing",
+        "trialName": "炼金",
+        "score": 102,
+        "reason": "均衡分配、改报 crafting→炼金",
+        "skills": []
+      },
+      "combat": {
+        "trialKey": "hedgehog",
+        "trialName": "刺猬",
+        "score": 77.6,
+        "reason": "法系适配、均衡分配、人数缩放通过、保持原报名",
+        "skills": [
+          "缠绕 75级",
+          "life drain 60级",
+          "critical aura 42级"
+        ]
+      }
+    },
+    "m-3e74f304124d2f633bbb": {
+      "name": "zc0804",
+      "life": {
+        "trialKey": "cheesesmithing",
+        "trialName": "炼金",
+        "score": 84,
+        "reason": "均衡分配、改报 alchemy→炼金",
+        "skills": []
+      },
+      "combat": {
+        "trialKey": "jellyfish",
+        "trialName": "水母",
+        "score": 78.5,
+        "reason": "法系适配、续航、辅助、均衡分配、人数缩放通过、保持原报名",
+        "skills": [
+          "缠绕 73级",
+          "快速援助 62级",
+          "自然帷幕 70级"
+        ]
+      }
+    }
+  }
 }
