@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "memberId": "m-2ca120f8dfca9274e1f8",
+  "name": "AhuaX1C",
+  "updatedAt": "2026-07-25T01:31:04.516Z",
+  "values": {
+    "level": 3338,
+    "combatLevel": 123,
+    "combat": 123,
+    "attackLevel": 122,
+    "defenseLevel": 106,
+    "meleeLevel": 75,
+    "rangedLevel": 86,
+    "magicLevel": 130,
+    "staminaLevel": 110,
+    "intelligenceLevel": 115,
+    "weaponType": "nature",
+    "damageType": "magic",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 11,
+    "abilityCount": 5,
+    "maxAbilityLevel": 63,
+    "combatHouseLevelSum": 20,
+    "aoe": 60,
+    "single": 63,
+    "support": 51,
+    "magic": 130
+  },
+  "lifeSkills": {
+    "milking": 107,
+    "foraging": 107,
+    "woodcutting": 100,
+    "cheesesmithing": 86,
+    "crafting": 90,
+    "tailoring": 93,
+    "cooking": 90,
+    "brewing": 84,
+    "alchemy": 83,
+    "enhancing": 85
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/wizard_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blooming_trident_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_nature_robe_top",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/ring_of_regeneration",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/earrings_of_regeneration",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/advanced_attack_charm",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 11
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_nature_robe_bottoms",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 10
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/mystic_aura",
+      "level": 42
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 54
+    },
+    {
+      "abilityHrid": "/abilities/toxic_pollen",
+      "level": 60
+    },
+    {
+      "abilityHrid": "/abilities/natures_veil",
+      "level": 51
+    },
+    {
+      "abilityHrid": "/abilities/entangle",
+      "level": 63
+    }
+  ],
+  "triggerMap": {
+    "/abilities/elemental_affinity": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1200
+      }
+    ],
+    "/abilities/entangle": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/mystic_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/mystic_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/natures_veil": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 900
+      }
+    ],
+    "/abilities/toxic_pollen": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 450
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 2,
+    "/house_rooms/armory": 3,
+    "/house_rooms/brewery": 1,
+    "/house_rooms/dairy_barn": 3,
+    "/house_rooms/dining_room": 3,
+    "/house_rooms/dojo": 3,
+    "/house_rooms/forge": 1,
+    "/house_rooms/garden": 3,
+    "/house_rooms/gym": 1,
+    "/house_rooms/kitchen": 1,
+    "/house_rooms/laboratory": 1,
+    "/house_rooms/library": 3,
+    "/house_rooms/log_shed": 2,
+    "/house_rooms/mystical_study": 5,
+    "/house_rooms/observatory": 3,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 1
+  }
+}
