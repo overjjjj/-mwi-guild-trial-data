@@ -3,12 +3,12 @@
   "guildId": "g-4178a53856334652",
   "memberId": "m-2ca120f8dfca9274e1f8",
   "name": "AhuaX1C",
-  "updatedAt": "2026-07-25T05:49:08.029Z",
+  "updatedAt": "2026-07-25T05:49:34.777Z",
   "values": {
-    "level": 3338,
+    "level": 3340,
     "combatLevel": 123,
     "combat": 123,
-    "attackLevel": 122,
+    "attackLevel": 123,
     "defenseLevel": 106,
     "meleeLevel": 75,
     "rangedLevel": 86,
@@ -41,6 +41,31 @@
     "enhancing": 85
   },
   "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 11
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_nature_robe_bottoms",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 10
+    },
     {
       "itemLocationHrid": "/item_locations/trinket",
       "itemHrid": "/items/expert_task_badge",
@@ -85,31 +110,6 @@
       "itemLocationHrid": "/item_locations/charm",
       "itemHrid": "/items/advanced_attack_charm",
       "enhancementLevel": 0
-    },
-    {
-      "itemLocationHrid": "/item_locations/off_hand",
-      "itemHrid": "/items/bishops_codex_refined",
-      "enhancementLevel": 10
-    },
-    {
-      "itemLocationHrid": "/item_locations/hands",
-      "itemHrid": "/items/chrono_gloves",
-      "enhancementLevel": 11
-    },
-    {
-      "itemLocationHrid": "/item_locations/legs",
-      "itemHrid": "/items/royal_nature_robe_bottoms",
-      "enhancementLevel": 10
-    },
-    {
-      "itemLocationHrid": "/item_locations/back",
-      "itemHrid": "/items/enchanted_cloak",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/feet",
-      "itemHrid": "/items/pathseeker_boots_refined",
-      "enhancementLevel": 10
     }
   ],
   "abilities": [
