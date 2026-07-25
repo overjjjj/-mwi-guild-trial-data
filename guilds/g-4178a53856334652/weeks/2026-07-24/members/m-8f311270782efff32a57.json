@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "memberId": "m-8f311270782efff32a57",
+  "name": "NightChange",
+  "updatedAt": "2026-07-25T04:19:32.440Z",
+  "values": {
+    "level": 3030,
+    "combatLevel": 143,
+    "combat": 143,
+    "attackLevel": 139,
+    "defenseLevel": 130,
+    "meleeLevel": 65,
+    "rangedLevel": 152,
+    "magicLevel": 5,
+    "staminaLevel": 130,
+    "intelligenceLevel": 121,
+    "weaponType": "crossbow",
+    "damageType": "physical",
+    "equipmentCount": 14,
+    "combatEquipmentCount": 14,
+    "maxEnhancement": 14,
+    "abilityCount": 5,
+    "maxAbilityLevel": 75,
+    "combatHouseLevelSum": 34,
+    "aoe": 75,
+    "single": 75,
+    "support": 51,
+    "physical": 152,
+    "ranged": 152
+  },
+  "lifeSkills": {
+    "milking": 54,
+    "foraging": 64,
+    "woodcutting": 78,
+    "cheesesmithing": 57,
+    "crafting": 103,
+    "tailoring": 104,
+    "cooking": 56,
+    "brewing": 90,
+    "alchemy": 82,
+    "enhancing": 85
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/chimerical_quiver_refined",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/sundering_crossbow_refined",
+      "enhancementLevel": 14
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/master_attack_charm",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/kraken_chaps_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/kraken_tunic_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/acrobatic_hood_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/manticore_shield",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/marksman_bracers_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathfinder_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 10
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/fierce_aura",
+      "level": 51
+    },
+    {
+      "abilityHrid": "/abilities/frenzy",
+      "level": 71
+    },
+    {
+      "abilityHrid": "/abilities/berserk",
+      "level": 75
+    },
+    {
+      "abilityHrid": "/abilities/rain_of_arrows",
+      "level": 75
+    },
+    {
+      "abilityHrid": "/abilities/penetrating_shot",
+      "level": 75
+    }
+  ],
+  "triggerMap": {
+    "/abilities/berserk": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/berserk",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/frenzy": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/frenzy",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/penetrating_shot": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/rain_of_arrows": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 8,
+    "/house_rooms/armory": 4,
+    "/house_rooms/brewery": 2,
+    "/house_rooms/dairy_barn": 2,
+    "/house_rooms/dining_room": 4,
+    "/house_rooms/dojo": 6,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 2,
+    "/house_rooms/gym": 2,
+    "/house_rooms/kitchen": 2,
+    "/house_rooms/laboratory": 2,
+    "/house_rooms/library": 8,
+    "/house_rooms/log_shed": 2,
+    "/house_rooms/mystical_study": 2,
+    "/house_rooms/observatory": 2,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 2
+  }
+}
