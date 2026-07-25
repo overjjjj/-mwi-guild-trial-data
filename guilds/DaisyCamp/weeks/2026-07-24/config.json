@@ -2,31 +2,31 @@
   "schemaVersion": 1,
   "guildId": "DaisyCamp",
   "weekId": "2026-07-24",
-  "updatedAt": "2026-07-24T01:39:24.519Z",
+  "updatedAt": "2026-07-25T16:47:34.209Z",
   "lifeTrials": [
     {
       "key": "milking",
       "zh": "挤奶",
       "capacity": 20,
-      "signed": 10
+      "signed": 20
     },
     {
       "key": "woodcutting",
       "zh": "伐木",
       "capacity": 20,
-      "signed": 2
+      "signed": 6
     },
     {
       "key": "cheesesmithing",
       "zh": "炼金",
       "capacity": 20,
-      "signed": 7
+      "signed": 19
     },
     {
       "key": "crafting",
       "zh": "制作",
       "capacity": 20,
-      "signed": 4
+      "signed": 13
     }
   ],
   "combatTrials": [
@@ -34,13 +34,13 @@
       "key": "jellyfish",
       "zh": "水母",
       "capacity": 40,
-      "signed": 3
+      "signed": 12
     },
     {
       "key": "hedgehog",
       "zh": "刺猬",
       "capacity": 40,
-      "signed": 15
+      "signed": 40
     }
   ],
   "memberNames": [
@@ -112,7 +112,12 @@
     "Situationship",
     "LuckyRice",
     "reallyenyull",
-    "210726"
+    "210726",
+    "dummyA",
+    "HeyeNightt",
+    "Linarna",
+    "zapple",
+    "sunshineoo"
   ],
   "bossProfiles": {
     "badger": {
