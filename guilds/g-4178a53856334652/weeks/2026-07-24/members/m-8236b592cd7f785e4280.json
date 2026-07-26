@@ -3,7 +3,7 @@
   "guildId": "g-4178a53856334652",
   "memberId": "m-8236b592cd7f785e4280",
   "name": "MMking",
-  "updatedAt": "2026-07-26T06:06:33.373Z",
+  "updatedAt": "2026-07-26T06:06:54.288Z",
   "values": {
     "level": 3586,
     "combatLevel": 135,
@@ -41,11 +41,6 @@
     "enhancing": 101
   },
   "equipment": [
-    {
-      "itemLocationHrid": "/item_locations/off_hand",
-      "itemHrid": "/items/bishops_codex_refined",
-      "enhancementLevel": 12
-    },
     {
       "itemLocationHrid": "/item_locations/neck",
       "itemHrid": "/items/philosophers_necklace",
@@ -109,6 +104,11 @@
     {
       "itemLocationHrid": "/item_locations/main_hand",
       "itemHrid": "/items/blooming_trident_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
       "enhancementLevel": 12
     }
   ],
