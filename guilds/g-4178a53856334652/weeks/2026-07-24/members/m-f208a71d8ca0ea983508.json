@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-4178a53856334652",
+  "memberId": "m-f208a71d8ca0ea983508",
+  "name": "Yukiiiiiiiiiiiii",
+  "updatedAt": "2026-07-28T03:09:53.321Z",
+  "values": {
+    "level": 3132,
+    "combatLevel": 140,
+    "combat": 140,
+    "attackLevel": 135,
+    "defenseLevel": 118,
+    "meleeLevel": 51,
+    "rangedLevel": 1,
+    "magicLevel": 151,
+    "staminaLevel": 125,
+    "intelligenceLevel": 125,
+    "weaponType": "fire",
+    "damageType": "magic",
+    "equipmentCount": 13,
+    "combatEquipmentCount": 13,
+    "maxEnhancement": 12,
+    "abilityCount": 5,
+    "maxAbilityLevel": 76,
+    "combatHouseLevelSum": 25,
+    "aoe": 59,
+    "single": 76,
+    "magic": 151
+  },
+  "lifeSkills": {
+    "milking": 102,
+    "foraging": 102,
+    "woodcutting": 88,
+    "cheesesmithing": 80,
+    "crafting": 62,
+    "tailoring": 87,
+    "cooking": 88,
+    "brewing": 80,
+    "alchemy": 86,
+    "enhancing": 85
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/chrono_gloves",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/main_hand",
+      "itemHrid": "/items/blazing_trident_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_fire_robe_top_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 0
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/expert_magic_charm",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_fire_robe_bottoms_refined",
+      "enhancementLevel": 10
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/mystic_aura",
+      "level": 40
+    },
+    {
+      "abilityHrid": "/abilities/elemental_affinity",
+      "level": 52
+    },
+    {
+      "abilityHrid": "/abilities/firestorm",
+      "level": 59
+    },
+    {
+      "abilityHrid": "/abilities/flame_blast",
+      "level": 59
+    },
+    {
+      "abilityHrid": "/abilities/fireball",
+      "level": 76
+    }
+  ],
+  "triggerMap": {
+    "/abilities/elemental_affinity": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/elemental_affinity",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/fireball": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      }
+    ],
+    "/abilities/firestorm": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 500
+      }
+    ],
+    "/abilities/flame_blast": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 1
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 500
+      }
+    ],
+    "/abilities/mystic_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/mystic_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/mystic_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 1,
+    "/house_rooms/armory": 4,
+    "/house_rooms/brewery": 1,
+    "/house_rooms/dairy_barn": 4,
+    "/house_rooms/dining_room": 4,
+    "/house_rooms/dojo": 5,
+    "/house_rooms/forge": 1,
+    "/house_rooms/garden": 2,
+    "/house_rooms/gym": 1,
+    "/house_rooms/kitchen": 1,
+    "/house_rooms/laboratory": 3,
+    "/house_rooms/library": 4,
+    "/house_rooms/log_shed": 1,
+    "/house_rooms/mystical_study": 6,
+    "/house_rooms/observatory": 4,
+    "/house_rooms/sewing_parlor": 1,
+    "/house_rooms/workshop": 1
+  }
+}
