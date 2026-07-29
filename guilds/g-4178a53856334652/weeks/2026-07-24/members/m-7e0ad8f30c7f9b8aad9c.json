@@ -3,16 +3,16 @@
   "guildId": "g-4178a53856334652",
   "memberId": "m-7e0ad8f30c7f9b8aad9c",
   "name": "e2yn",
-  "updatedAt": "2026-07-25T09:44:07.132Z",
+  "updatedAt": "2026-07-29T13:48:17.935Z",
   "values": {
-    "level": 3178,
-    "combatLevel": 141,
-    "combat": 141,
+    "level": 3180,
+    "combatLevel": 142,
+    "combat": 142,
     "attackLevel": 140,
     "defenseLevel": 120,
     "meleeLevel": 54,
     "rangedLevel": 1,
-    "magicLevel": 153,
+    "magicLevel": 154,
     "staminaLevel": 120,
     "intelligenceLevel": 116,
     "weaponType": "nature",
@@ -26,7 +26,7 @@
     "aoe": 80,
     "single": 82,
     "support": 71,
-    "magic": 153
+    "magic": 154
   },
   "lifeSkills": {
     "milking": 92,
@@ -41,6 +41,36 @@
     "enhancing": 109
   },
   "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 2
+    },
+    {
+      "itemLocationHrid": "/item_locations/off_hand",
+      "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/royal_nature_robe_bottoms_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/pathseeker_boots_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/grandmaster_magic_charm",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 7
+    },
     {
       "itemLocationHrid": "/item_locations/head",
       "itemHrid": "/items/magicians_hat_refined",
@@ -79,36 +109,6 @@
     {
       "itemLocationHrid": "/item_locations/ring",
       "itemHrid": "/items/philosophers_ring",
-      "enhancementLevel": 7
-    },
-    {
-      "itemLocationHrid": "/item_locations/trinket",
-      "itemHrid": "/items/expert_task_badge",
-      "enhancementLevel": 2
-    },
-    {
-      "itemLocationHrid": "/item_locations/off_hand",
-      "itemHrid": "/items/bishops_codex_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/legs",
-      "itemHrid": "/items/royal_nature_robe_bottoms_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/feet",
-      "itemHrid": "/items/pathseeker_boots_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/charm",
-      "itemHrid": "/items/grandmaster_magic_charm",
-      "enhancementLevel": 7
-    },
-    {
-      "itemLocationHrid": "/item_locations/neck",
-      "itemHrid": "/items/philosophers_necklace",
       "enhancementLevel": 7
     }
   ],
