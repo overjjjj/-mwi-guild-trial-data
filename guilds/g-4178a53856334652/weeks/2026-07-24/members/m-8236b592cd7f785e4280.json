@@ -3,7 +3,7 @@
   "guildId": "g-4178a53856334652",
   "memberId": "m-8236b592cd7f785e4280",
   "name": "MMking",
-  "updatedAt": "2026-07-26T06:06:54.288Z",
+  "updatedAt": "2026-07-29T07:09:23.545Z",
   "values": {
     "level": 3586,
     "combatLevel": 135,
@@ -41,31 +41,6 @@
     "enhancing": 101
   },
   "equipment": [
-    {
-      "itemLocationHrid": "/item_locations/neck",
-      "itemHrid": "/items/philosophers_necklace",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/back",
-      "itemHrid": "/items/enchanted_cloak",
-      "enhancementLevel": 3
-    },
-    {
-      "itemLocationHrid": "/item_locations/earrings",
-      "itemHrid": "/items/philosophers_earrings",
-      "enhancementLevel": 5
-    },
-    {
-      "itemLocationHrid": "/item_locations/body",
-      "itemHrid": "/items/royal_nature_robe_top_refined",
-      "enhancementLevel": 12
-    },
-    {
-      "itemLocationHrid": "/item_locations/head",
-      "itemHrid": "/items/magicians_hat_refined",
-      "enhancementLevel": 12
-    },
     {
       "itemLocationHrid": "/item_locations/pouch",
       "itemHrid": "/items/guzzling_pouch",
@@ -109,6 +84,31 @@
     {
       "itemLocationHrid": "/item_locations/off_hand",
       "itemHrid": "/items/bishops_codex_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/enchanted_cloak",
+      "enhancementLevel": 3
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/royal_nature_robe_top_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/magicians_hat_refined",
       "enhancementLevel": 12
     }
   ],
