@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-670c0adbfe5dc0a0",
+  "weekId": "2026-07-31",
+  "updatedAt": "2026-07-31T07:49:20.445Z",
+  "lifeTrials": [
+    {
+      "key": "milking",
+      "zh": "挤奶",
+      "capacity": 22,
+      "signed": 9
+    },
+    {
+      "key": "foraging",
+      "zh": "采摘",
+      "capacity": 22,
+      "signed": 7
+    },
+    {
+      "key": "cheesesmithing",
+      "zh": "炼金",
+      "capacity": 22,
+      "signed": 8
+    },
+    {
+      "key": "crafting",
+      "zh": "制作",
+      "capacity": 22,
+      "signed": 15
+    }
+  ],
+  "combatTrials": [
+    {
+      "key": "badger",
+      "zh": "獾",
+      "capacity": 40,
+      "signed": 13
+    },
+    {
+      "key": "hedgehog",
+      "zh": "刺猬",
+      "capacity": 40,
+      "signed": 9
+    }
+  ],
+  "memberNames": [
+    "heshui",
+    "kehua8",
+    "papaia",
+    "LIKEME",
+    "nivalis",
+    "BanDream",
+    "TKISOKAZE",
+    "CLEAAR",
+    "mmdyxz",
+    "Beautifulwoman",
+    "Arrebolchen",
+    "sakein",
+    "NCQBM",
+    "BraveNNiu",
+    "UnamedSpace",
+    "Awakenn",
+    "hzgsyn",
+    "lllgg",
+    "dtybb101",
+    "IsaacTheMouse",
+    "AutumnWwwwind",
+    "catcrystal",
+    "qwertywa",
+    "LonYue",
+    "may233",
+    "star10",
+    "HSFPrime",
+    "xiguaguanya",
+    "Is1and",
+    "teamajor",
+    "Rabbitsmeat",
+    "323aa",
+    "7ovezzz",
+    "pangpangjiang",
+    "Spter",
+    "fcdufdyfc",
+    "Redscrap",
+    "yyuukkhh",
+    "wavecloud",
+    "SiuCookie",
+    "PomiHomie",
+    "YNYN",
+    "Akardo",
+    "Syuuu",
+    "qiaozhongniu",
+    "ichihamigua",
+    "TEET",
+    "DcupVV",
+    "DBBD",
+    "irog",
+    "hllover",
+    "sooooooooo",
+    "taotaotaotaozi",
+    "GuYunTaoist",
+    "Raynard",
+    "asukawn",
+    "Whoisit",
+    "jiyan",
+    "StoutOx",
+    "GlacierLuo",
+    "nyanyabot",
+    "3qq",
+    "DF666",
+    "huakai5",
+    "202006",
+    "KabanFriends24",
+    "NoTimeee",
+    "leon0607",
+    "WLLL6",
+    "haoman666",
+    "NathanielNC",
+    "YAUMI3",
+    "Pikap",
+    "moomoo66",
+    "vindaasda",
+    "Yannnnn"
+  ],
+  "bossProfiles": {
+    "badger": {
+      "label": "magic-single-low-evasion",
+      "weights": {
+        "magic": 1.7,
+        "single": 1.25,
+        "tank": 0.75,
+        "healer": 0.55,
+        "sustain": 0.55,
+        "support": 0.3,
+        "physical": 0.2
+      },
+      "tags": [
+        "single",
+        "magic",
+        "low-magic-evasion"
+      ]
+    },
+    "swarm": {
+      "label": "aoe-mixed-four-targets",
+      "weights": {
+        "aoe": 1.8,
+        "magic": 1,
+        "blunt": 0.85,
+        "ranged": 0.75,
+        "stab": 0.7,
+        "slash": 0.7,
+        "physical": 0.55,
+        "healer": 0.85,
+        "tank": 0.8,
+        "support": 0.8,
+        "sustain": 0.75
+      },
+      "tags": [
+        "aoe",
+        "mixed-damage",
+        "four-targets",
+        "sustain",
+        "support"
+      ]
+    }
+  }
+}
