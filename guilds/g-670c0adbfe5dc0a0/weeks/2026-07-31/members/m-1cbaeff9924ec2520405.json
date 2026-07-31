@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "guildId": "g-670c0adbfe5dc0a0",
+  "memberId": "m-1cbaeff9924ec2520405",
+  "name": "IsaacTheMouse",
+  "updatedAt": "2026-07-31T07:49:28.646Z",
+  "values": {
+    "level": 3824,
+    "combatLevel": 136,
+    "combat": 136,
+    "attackLevel": 126,
+    "defenseLevel": 141,
+    "meleeLevel": 126,
+    "rangedLevel": 105,
+    "magicLevel": 103,
+    "staminaLevel": 138,
+    "intelligenceLevel": 125,
+    "weaponType": "bulwark",
+    "damageType": "physical",
+    "equipmentCount": 13,
+    "combatEquipmentCount": 13,
+    "maxEnhancement": 14,
+    "abilityCount": 5,
+    "maxAbilityLevel": 85,
+    "combatHouseLevelSum": 34,
+    "aoe": 80,
+    "support": 50,
+    "physical": 126,
+    "role": "tank"
+  },
+  "lifeSkills": {
+    "milking": 106,
+    "foraging": 104,
+    "woodcutting": 103,
+    "cheesesmithing": 105,
+    "crafting": 105,
+    "tailoring": 111,
+    "cooking": 107,
+    "brewing": 107,
+    "alchemy": 103,
+    "enhancing": 97
+  },
+  "equipment": [
+    {
+      "itemLocationHrid": "/item_locations/pouch",
+      "itemHrid": "/items/guzzling_pouch",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/body",
+      "itemHrid": "/items/anchorbound_plate_body_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/head",
+      "itemHrid": "/items/corsair_helmet",
+      "enhancementLevel": 10
+    },
+    {
+      "itemLocationHrid": "/item_locations/hands",
+      "itemHrid": "/items/magnetic_gloves",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/trinket",
+      "itemHrid": "/items/expert_task_badge",
+      "enhancementLevel": 1
+    },
+    {
+      "itemLocationHrid": "/item_locations/legs",
+      "itemHrid": "/items/anchorbound_plate_legs_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/feet",
+      "itemHrid": "/items/shoebill_shoes",
+      "enhancementLevel": 14
+    },
+    {
+      "itemLocationHrid": "/item_locations/neck",
+      "itemHrid": "/items/philosophers_necklace",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/charm",
+      "itemHrid": "/items/master_stamina_charm",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/ring",
+      "itemHrid": "/items/philosophers_ring",
+      "enhancementLevel": 7
+    },
+    {
+      "itemLocationHrid": "/item_locations/back",
+      "itemHrid": "/items/sinister_cape_refined",
+      "enhancementLevel": 5
+    },
+    {
+      "itemLocationHrid": "/item_locations/two_hand",
+      "itemHrid": "/items/griffin_bulwark_refined",
+      "enhancementLevel": 12
+    },
+    {
+      "itemLocationHrid": "/item_locations/earrings",
+      "itemHrid": "/items/philosophers_earrings",
+      "enhancementLevel": 7
+    }
+  ],
+  "abilities": [
+    {
+      "abilityHrid": "/abilities/critical_aura",
+      "level": 50
+    },
+    {
+      "abilityHrid": "/abilities/fracturing_impact",
+      "level": 80
+    },
+    {
+      "abilityHrid": "/abilities/provoke",
+      "level": 70
+    },
+    {
+      "abilityHrid": "/abilities/retribution",
+      "level": 85
+    },
+    {
+      "abilityHrid": "/abilities/spike_shell",
+      "level": 80
+    }
+  ],
+  "triggerMap": {
+    "/abilities/critical_aura": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/critical_aura",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      }
+    ],
+    "/abilities/fracturing_impact": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/number_of_dead_units",
+        "comparatorHrid": "/combat_trigger_comparators/less_than_equal",
+        "value": 1
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+        "conditionHrid": "/combat_trigger_conditions/current_hp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 5000
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/current_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 750
+      }
+    ],
+    "/abilities/retribution": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/retribution",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/current_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 250
+      }
+    ],
+    "/abilities/spike_shell": [
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/spike_shell",
+        "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+        "value": 0
+      },
+      {
+        "dependencyHrid": "/combat_trigger_dependencies/self",
+        "conditionHrid": "/combat_trigger_conditions/current_mp",
+        "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+        "value": 500
+      }
+    ]
+  },
+  "houseRooms": {
+    "/house_rooms/archery_range": 2,
+    "/house_rooms/armory": 6,
+    "/house_rooms/brewery": 2,
+    "/house_rooms/dairy_barn": 3,
+    "/house_rooms/dining_room": 8,
+    "/house_rooms/dojo": 5,
+    "/house_rooms/forge": 2,
+    "/house_rooms/garden": 3,
+    "/house_rooms/gym": 4,
+    "/house_rooms/kitchen": 2,
+    "/house_rooms/laboratory": 2,
+    "/house_rooms/library": 7,
+    "/house_rooms/log_shed": 3,
+    "/house_rooms/mystical_study": 2,
+    "/house_rooms/observatory": 4,
+    "/house_rooms/sewing_parlor": 2,
+    "/house_rooms/workshop": 2
+  }
+}
